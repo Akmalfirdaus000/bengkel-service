@@ -54,6 +54,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is owner.
+     */
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    /**
      * Check if user is admin.
      */
     public function isAdmin(): bool

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -75,7 +76,7 @@ class ReportController extends Controller
                 $query->where('completed_at', '>=', now()->subWeeks(12));
                 break;
             case 'monthly':
-                $query->where('completed_at', '>=', now()->subYear(1));
+                $query->where('completed_at', '>=', now()->subYears(1));
                 break;
             case 'yearly':
                 $query->where('completed_at', '>=', now()->subYears(5));
@@ -88,5 +89,47 @@ class ReportController extends Controller
             'revenueData' => $revenueData,
             'period' => $period,
         ]);
+    }
+
+    /**
+     * Export reports as PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
+
+        $bookingsByStatus = Booking::whereBetween('created_at', [$dateFrom, $dateTo])
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $topVehicles = Booking::selectRaw('vehicle_id, COUNT(*) as booking_count')
+            ->whereBetween('created_at', [$dateFrom, $dateTo])
+            ->with('vehicle')
+            ->groupBy('vehicle_id')
+            ->orderByDesc('booking_count')
+            ->limit(10)
+            ->get();
+
+        $revenueSummary = Booking::where('status', 'completed')
+            ->whereBetween('completed_at', [$dateFrom, $dateTo])
+            ->selectRaw('COUNT(*) as total_completed, SUM(final_amount) as total_revenue')
+            ->first();
+
+        $summary = (object)[
+            'total_bookings' => Booking::whereBetween('created_at', [$dateFrom, $dateTo])->count()
+        ];
+
+        $pdf = Pdf::loadView('pdf.report', [
+            'bookings_by_status' => $bookingsByStatus,
+            'top_vehicles' => $topVehicles,
+            'revenue_summary' => $revenueSummary,
+            'summary' => $summary,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ]);
+
+        return $pdf->download('Laporan-Business-' . $dateFrom . '-ke-' . $dateTo . '.pdf');
     }
 }

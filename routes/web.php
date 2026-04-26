@@ -18,6 +18,10 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
+    if ($user && $user->isOwner()) {
+        return redirect()->route('owner.dashboard');
+    }
+
     if ($user && $user->isUser()) {
         return redirect()->route('user.dashboard');
     }

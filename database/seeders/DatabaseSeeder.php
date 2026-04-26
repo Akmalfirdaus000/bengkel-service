@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // Run seeders in order
         $this->call([
             AdminSeeder::class,
+            OwnerSeeder::class,
             ServiceCategorySeeder::class,
             ServiceSeeder::class,
             ServiceSubItemSeeder::class,

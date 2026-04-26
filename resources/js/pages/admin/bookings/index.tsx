@@ -16,6 +16,7 @@ import {
     Filter,
     ArrowUpRight,
     CheckCircle,
+    Download,
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -159,6 +160,21 @@ export default function AdminBookingsIndex({ bookings, filters }: BookingsIndexP
                                     <p className="max-w-2xl text-blue-100">
                                         Antrian aktif servis. Kelola status booking, tugaskan mekanik, dan pantau progres servis.
                                     </p>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <Link href={`/admin/bookings/export-pdf?status=${filters.status || 'all'}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`}>
+                                        <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Ekspor PDF
+                                        </Button>
+                                    </Link>
+                                    <Link href="/admin/bookings/history">
+                                        <Button className="bg-white text-blue-700 hover:bg-blue-50">
+                                            <Clock className="mr-2 h-4 w-4" />
+                                            Riwayat Booking
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

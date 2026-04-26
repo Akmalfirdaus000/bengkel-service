@@ -13,6 +13,7 @@ import {
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { Building2 } from 'lucide-react';
 import {
     Sidebar,
     SidebarContent,
@@ -102,6 +103,30 @@ const userNavItems: NavItem[] = [
     },
 ];
 
+// Owner navigation items
+const ownerNavItems: NavItem[] = [
+    {
+        title: 'Dashboard Pemilik',
+        href: '/owner/dashboard',
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Laporan Bisnis',
+        href: '/owner/reports',
+        icon: TrendingUp,
+    },
+    {
+        title: 'Status Bengkel',
+        href: '/owner/workshop-status',
+        icon: Building2,
+    },
+    {
+        title: 'Manajemen Mekanik',
+        href: '/owner/mechanics',
+        icon: Users,
+    },
+];
+
 const footerNavItems: NavItem[] = [
     {
         title: 'Bantuan',
@@ -118,10 +143,15 @@ export function AppSidebar() {
         if (auth?.user?.role === 'admin') {
             return adminNavItems;
         }
+        if (auth?.user?.role === 'owner') {
+            return ownerNavItems;
+        }
         return userNavItems;
     }, [auth?.user?.role]);
 
-    const dashboardUrl = auth?.user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    const dashboardUrl = auth?.user?.role === 'admin' 
+        ? '/admin/dashboard' 
+        : (auth?.user?.role === 'owner' ? '/owner/dashboard' : '/user/dashboard');
 
     return (
         <Sidebar collapsible="icon" variant="inset">

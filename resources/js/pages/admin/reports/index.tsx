@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator } from 'lucide-react';
+import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator, Download } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -80,12 +80,20 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                                     </p>
                                 </div>
 
-                                <Link href="/admin/reports/revenue">
-                                    <Button className="bg-white text-blue-700 hover:bg-blue-50">
-                                        <TrendingUp className="mr-2 h-4 w-4" />
-                                        Laporan Pendapatan
-                                    </Button>
-                                </Link>
+                                <div className="flex gap-3">
+                                    <Link href={`/admin/reports/export-pdf?date_from=${filters.date_from}&date_to=${filters.date_to}`}>
+                                        <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Ekspor PDF
+                                        </Button>
+                                    </Link>
+                                    <Link href="/admin/reports/revenue">
+                                        <Button className="bg-white text-blue-700 hover:bg-blue-50">
+                                            <TrendingUp className="mr-2 h-4 w-4" />
+                                            Laporan Pendapatan
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

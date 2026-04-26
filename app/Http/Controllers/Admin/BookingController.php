@@ -11,6 +11,7 @@ use App\Models\ServiceSubItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
@@ -109,8 +110,7 @@ class BookingController extends Controller
         $serviceItems->each(function ($item) {
             $item->sub_item_name = $item->serviceSubItem?->name;
         });
-
-        $booking->serviceItems = $serviceItems;
+        $booking->setRelation('serviceItems', $serviceItems);
 
         $availableMechanics = Mechanic::active()->available()->get();
 
@@ -292,5 +292,46 @@ class BookingController extends Controller
 
         return redirect()->route('admin.bookings.index')
             ->with('success', 'Booking berhasil dihapus.');
+    }
+
+    /**
+     * Download invoice as PDF.
+     */
+    public function downloadInvoice(Booking $booking)
+    {
+        $booking->load(['user', 'vehicle', 'mechanics', 'payments']);
+        
+        $serviceItems = ServiceItem::where('booking_id', $booking->id)
+            ->with(['service', 'serviceSubItem'])
+            ->get();
+        $booking->setRelation('serviceItems', $serviceItems);
+
+        $pdf = Pdf::loadView('pdf.invoice', ['booking' => $booking]);
+        
+        return $pdf->download('Invoice-' . $booking->queue_number . '.pdf');
+    }
+
+    /**
+     * Export transactions as PDF.
+     */
+    public function exportTransactions(Request $request)
+    {
+        $query = Booking::with(['user', 'vehicle', 'mechanics']);
+
+        if ($request->has('date_from')) {
+            $query->whereDate('booking_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to')) {
+            $query->whereDate('booking_date', '<=', $request->date_to);
+        }
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $bookings = $query->orderBy('booking_date', 'desc')->get();
+
+        $pdf = Pdf::loadView('pdf.transactions', ['bookings' => $bookings]);
+        
+        return $pdf->download('Daftar-Transaksi-' . date('Y-m-d') . '.pdf');
     }
 }

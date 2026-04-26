@@ -14,6 +14,7 @@ import {
     ArrowUpRight,
     History,
     FileText,
+    Download,
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -121,12 +122,20 @@ export default function AdminBookingsHistory({ bookings, filters }: BookingsHist
                                     </p>
                                 </div>
 
-                                <Link href="/admin/bookings">
-                                    <Button variant="outline" size="lg" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                                        <ArrowLeft className="mr-2 h-4 w-4" />
-                                        Booking Aktif
-                                    </Button>
-                                </Link>
+                                <div className="flex gap-3">
+                                    <Link href={`/admin/bookings/export-pdf?status=completed&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`}>
+                                        <Button className="bg-emerald-500 text-white hover:bg-emerald-600 shadow-md">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Ekspor PDF
+                                        </Button>
+                                    </Link>
+                                    <Link href="/admin/bookings">
+                                        <Button variant="outline" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+                                            <ArrowLeft className="mr-2 h-4 w-4" />
+                                            Booking Aktif
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

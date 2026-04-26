@@ -634,10 +634,18 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                             </p>
                                         </div>
                                         {currentStatus === 'completed' && (
-                                            <Button variant="outline" className="w-full" onClick={() => window.print()}>
-                                                <Printer className="h-4 w-4 mr-2" />
-                                                Cetak Struk
-                                            </Button>
+                                            <div className="flex flex-col gap-2">
+                                                <a href={`/admin/bookings/${booking.id}/invoice`} target="_blank">
+                                                    <Button variant="default" className="w-full bg-blue-600 hover:bg-blue-700">
+                                                        <Printer className="h-4 w-4 mr-2" />
+                                                        Download Invoice
+                                                    </Button>
+                                                </a>
+                                                <Button variant="outline" className="w-full" onClick={() => window.print()}>
+                                                    <Printer className="h-4 w-4 mr-2" />
+                                                    Cetak Struk Browser
+                                                </Button>
+                                            </div>
                                         )}
                                     </div>
                                 )}
