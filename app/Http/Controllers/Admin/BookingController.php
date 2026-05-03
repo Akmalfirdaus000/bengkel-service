@@ -300,15 +300,21 @@ class BookingController extends Controller
     public function downloadInvoice(Booking $booking)
     {
         $booking->load(['user', 'vehicle', 'mechanics', 'payments']);
-        
+
         $serviceItems = ServiceItem::where('booking_id', $booking->id)
             ->with(['service', 'serviceSubItem'])
             ->get();
         $booking->setRelation('serviceItems', $serviceItems);
 
-        $pdf = Pdf::loadView('pdf.invoice', ['booking' => $booking]);
-        
-        return $pdf->download('Invoice-' . $booking->queue_number . '.pdf');
+        $pdf = Pdf::loadView('pdf.invoice', ['booking' => $booking])
+            ->setOptions(['defaultFont' => 'Helvetica']);
+
+        return response()->streamDownload(function() use ($pdf) {
+            echo $pdf->output();
+        }, 'Invoice-' . $booking->queue_number . '.pdf', [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="Invoice-' . $booking->queue_number . '.pdf"'
+        ]);
     }
 
     /**
@@ -330,8 +336,14 @@ class BookingController extends Controller
 
         $bookings = $query->orderBy('booking_date', 'desc')->get();
 
-        $pdf = Pdf::loadView('pdf.transactions', ['bookings' => $bookings]);
-        
-        return $pdf->download('Daftar-Transaksi-' . date('Y-m-d') . '.pdf');
+        $pdf = Pdf::loadView('pdf.transactions', ['bookings' => $bookings])
+            ->setOptions(['defaultFont' => 'Helvetica']);
+
+        return response()->streamDownload(function() use ($pdf) {
+            echo $pdf->output();
+        }, 'Daftar-Transaksi-' . date('Y-m-d') . '.pdf', [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="Daftar-Transaksi-' . date('Y-m-d') . '.pdf"'
+        ]);
     }
 }

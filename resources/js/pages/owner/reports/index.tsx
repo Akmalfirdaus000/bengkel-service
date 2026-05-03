@@ -9,7 +9,9 @@ import {
     ShoppingCart,
     ArrowUpRight,
     Search,
-    BarChart3
+    BarChart3,
+    Download,
+    FileText
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -21,6 +23,10 @@ interface OwnerReportsProps {
         completed_bookings: number;
         customer_growth: number;
     };
+    allTimeRevenue?: number;
+    thisMonthRevenue?: number;
+    thisMonthCompleted?: number;
+    totalCustomers?: number;
     topServices: Array<{
         name: string;
         total_revenue: number;
@@ -39,7 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function OwnerReports({ overview, topServices, filters }: OwnerReportsProps) {
+export default function OwnerReports({ overview, topServices, filters, allTimeRevenue = 0, thisMonthRevenue = 0, thisMonthCompleted = 0, totalCustomers = 0 }: OwnerReportsProps) {
     const formatCurrency = (amount: number) => {
         return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amount)}`;
     };
@@ -54,25 +60,31 @@ export default function OwnerReports({ overview, topServices, filters }: OwnerRe
                         <h1 className="text-3xl font-black tracking-tight">Analisis Bisnis</h1>
                         <p className="text-slate-500">Pantau pertumbuhan dan performa finansial bengkel Anda.</p>
                     </div>
-                    <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-                        <div className="flex flex-col px-3">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Periode</span>
-                            <span className="text-sm font-bold">{filters.date_from} - {filters.date_to}</span>
+                    <div className="flex items-center gap-3">
+                        <a href="/owner/reports/export-pdf" className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            Export PDF
+                        </a>
+                        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex flex-col px-3">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Periode</span>
+                                <span className="text-sm font-bold">{filters.date_from} - {filters.date_to}</span>
+                            </div>
+                            <div className="h-8 w-[1px] bg-slate-100" />
+                            <button className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                                <Calendar className="h-5 w-5 text-primary" />
+                            </button>
                         </div>
-                        <div className="h-8 w-[1px] bg-slate-100" />
-                        <button className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-                            <Calendar className="h-5 w-5 text-primary" />
-                        </button>
                     </div>
                 </header>
 
-                {/* KPI Overview */}
+                {/* KPI Overview - Like Dashboard */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {[
-                        { label: 'Total Pendapatan', value: formatCurrency(overview.total_revenue), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-100' },
-                        { label: 'Total Booking', value: overview.total_bookings, icon: ShoppingCart, color: 'text-amber-600', bg: 'bg-amber-100' },
-                        { label: 'Servis Selesai', value: overview.completed_bookings, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-                        { label: 'Pelanggan Baru', value: overview.customer_growth, icon: Users, color: 'text-violet-600', bg: 'bg-violet-100' },
+                        { label: 'Total Pendapatan', value: formatCurrency(allTimeRevenue), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-100', subtitle: 'SEJAS BENGKEL BEROPERASI' },
+                        { label: 'Pendapatan Bulan Ini', value: formatCurrency(thisMonthRevenue), icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100', subtitle: `${thisMonthCompleted} SERVIS SELESAI` },
+                        { label: 'Total Pelanggan', value: totalCustomers, icon: Users, color: 'text-violet-600', bg: 'bg-violet-100', subtitle: 'PELANGGAN TERDAFTAR' },
+                        { label: 'Total Booking', value: overview.total_bookings, icon: ShoppingCart, color: 'text-amber-600', bg: 'bg-amber-100', subtitle: 'PERIODE INI' },
                     ].map((kpi, idx) => (
                         <Card key={idx} className="border-none shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -83,10 +95,58 @@ export default function OwnerReports({ overview, topServices, filters }: OwnerRe
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-black">{kpi.value}</div>
-                                <p className="text-[10px] text-slate-400 font-bold mt-1">SINKRONISASI REAL-TIME</p>
+                                <p className="text-[10px] text-slate-400 font-bold mt-1">{kpi.subtitle}</p>
                             </CardContent>
                         </Card>
                     ))}
+                </div>
+
+                {/* Quick Report Access */}
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Link href="/owner/reports/transactions">
+                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-blue-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <BarChart3 className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-blue-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-blue-900">Laporan Transaksi</CardTitle>
+                                <CardDescription className="text-blue-700">Analisis transaksi service lengkap</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/owner/reports/invoices">
+                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-violet-50 to-violet-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-violet-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <FileText className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-violet-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-violet-900">Laporan Invoice</CardTitle>
+                                <CardDescription className="text-violet-700">Ringkasan invoice & pembayaran</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/owner/reports/revenue">
+                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-emerald-50 to-emerald-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-emerald-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <TrendingUp className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-emerald-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-emerald-900">Laporan Pendapatan</CardTitle>
+                                <CardDescription className="text-emerald-700">Analisis tren pendapatan bulanan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
                 </div>
 
                 <div className="grid gap-8 lg:grid-cols-3">

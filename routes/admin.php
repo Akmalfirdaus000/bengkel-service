@@ -24,6 +24,14 @@ Route::middleware(['auth', 'verified', 'isAdmin'])
             ->name('reports.revenue');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])
             ->name('reports.export-pdf');
+        Route::get('/reports/transactions', [ReportController::class, 'transactions'])
+            ->name('reports.transactions');
+        Route::get('/reports/transactions/export-pdf', [ReportController::class, 'exportTransactions'])
+            ->name('reports.transactions.export-pdf');
+        Route::get('/reports/invoices', [ReportController::class, 'invoices'])
+            ->name('reports.invoices');
+        Route::get('/reports/invoices/export-pdf', [ReportController::class, 'exportInvoices'])
+            ->name('reports.invoices.export-pdf');
 
         // Service Categories
         Route::resource('service-categories', ServiceCategoryController::class);

@@ -61,7 +61,7 @@ interface ShowBookingProps {
             year: string | null;
             color: string | null;
         };
-        serviceItems: Array<{
+        serviceItems?: Array<{
             id: number;
             quantity: number;
             unit_price: number;
@@ -72,13 +72,13 @@ interface ShowBookingProps {
                 name: string;
             };
         }>;
-        mechanics: Array<{
+        mechanics?: Array<{
             id: number;
             name: string;
             phone: string | null;
             specialization: string | null;
         }>;
-        payments: Array<{
+        payments?: Array<{
             id: number;
             payment_method: string;
             amount: number;
@@ -151,7 +151,7 @@ const nextStatusMap: Record<string, string | null> = {
 
 export default function AdminBookingShow({ booking, availableMechanics, allServices }: ShowBookingProps) {
     const [currentStatus, setCurrentStatus] = useState(booking.status);
-    const [selectedMechanicIds, setSelectedMechanicIds] = useState<number[]>(booking.mechanics?.map((m) => m.id) || []);
+    const [selectedMechanicIds, setSelectedMechanicIds] = useState<number[]>(booking.mechanics?.map((m) => m.id) ?? []);
     const [confirmNextStep, setConfirmNextStep] = useState(false);
     const [addServiceModalOpen, setAddServiceModalOpen] = useState(false);
 
@@ -213,7 +213,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
     const selectedServiceSubItems = useMemo(() => {
         if (!selectedService) return [];
         return selectedService.sub_items || selectedService.subItems || [];
-    }, [selectedService]);
+    }, [selectedService, allServices]);
 
     const assignMechanics = () => {
         if (!canEditMechanics) return;
@@ -253,6 +253,8 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         });
     };
 
+    const serviceItemsCount = booking.serviceItems?.length ?? 0;
+
     const masterStats = [
         {
             title: 'Nomor Antrian',
@@ -278,7 +280,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         {
             title: 'Total Biaya',
             value: formatCurrency(booking.final_amount),
-            description: `${booking.serviceItems.length} layanan`,
+            description: `${serviceItemsCount} layanan`,
             icon: DollarSign,
             accent: 'from-violet-500 to-purple-600',
         },
@@ -491,7 +493,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                 )}
                             </CardHeader>
                             <CardContent>
-                                {booking.serviceItems.length === 0 ? (
+                                {!booking.serviceItems || booking.serviceItems.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12">
                                         <div className="rounded-full bg-slate-100 p-4">
                                             <Wrench className="h-10 w-10 text-slate-400" />

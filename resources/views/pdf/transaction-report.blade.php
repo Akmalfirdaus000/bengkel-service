@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Bisnis - Suja Bengkel</title>
+    <title>Laporan Transaksi - Suja Bengkel</title>
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -66,21 +66,20 @@
         }
         .summary-cell {
             display: table-cell;
-            width: 33.33%;
-            padding: 15px;
+            width: 25%;
+            padding: 10px;
             border: 1px solid #000;
             vertical-align: top;
-            text-align: center;
         }
         .summary-label {
             font-size: 9px;
             text-transform: uppercase;
             color: #666;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: normal;
         }
         .summary-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #000;
         }
@@ -88,7 +87,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             page-break-inside: auto;
         }
         table thead {
@@ -104,7 +103,7 @@
         th {
             background: #f5f5f5;
             text-align: left;
-            padding: 10px;
+            padding: 8px 6px;
             border: 1px solid #000;
             color: #000;
             font-size: 9px;
@@ -114,27 +113,64 @@
         th.text-center {
             text-align: center;
         }
+        th.text-right {
+            text-align: right;
+        }
         td {
-            padding: 10px;
+            padding: 8px 6px;
             border: 1px solid #ccc;
             font-size: 10px;
-            vertical-align: middle;
+            vertical-align: top;
         }
         td.text-center {
             text-align: center;
         }
+        td.text-right {
+            text-align: right;
+        }
         .row-odd {
             background: #f9f9f9;
         }
-        .status-name {
-            text-transform: capitalize;
+        .status-text {
+            font-weight: normal;
+            font-size: 9px;
+            text-transform: uppercase;
         }
-        .vehicle-name {
+        .customer-name {
             font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .customer-phone {
+            font-size: 9px;
+            color: #666;
+        }
+        .vehicle-info {
+            font-weight: bold;
+            margin-bottom: 2px;
         }
         .vehicle-plate {
             font-size: 9px;
             color: #666;
+        }
+        .mechanic-list {
+            font-size: 9px;
+        }
+        .amount {
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .total-row {
+            background: #f0f0f0 !important;
+            font-weight: bold;
+        }
+        .total-row td {
+            border-top: 2px solid #000;
+            padding: 12px 6px;
+            font-size: 11px;
+        }
+        .grand-total {
+            font-size: 13px;
+            text-transform: uppercase;
         }
 
         .footer {
@@ -166,7 +202,7 @@
         <!-- Header -->
         <div class="header">
             <div class="company-name">SUJA BENGKEL</div>
-            <div class="report-title">LAPORAN OPERASIONAL & PENDAPATAN</div>
+            <div class="report-title">LAPORAN TRANSAKSI SERVICE</div>
             <div class="report-period">
                 Periode: {{ \Carbon\Carbon::parse($date_from)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($date_to)->format('d/m/Y') }}
             </div>
@@ -177,89 +213,47 @@
 
         <!-- Summary Section -->
         <div class="summary-section">
-            <div class="summary-title">Ringkasan Operasional</div>
+            <div class="summary-title">Ringkasan Transaksi</div>
             <div class="summary-grid">
                 <div class="summary-row">
                     <div class="summary-cell">
-                        <div class="summary-label">Total Booking</div>
-                        <div class="summary-value">{{ $summary->total_bookings ?? 0 }}</div>
-                    </div>
-                    <div class="summary-cell">
-                        <div class="summary-label">Servis Selesai</div>
-                        <div class="summary-value">{{ $revenue_summary->total_completed ?? 0 }}</div>
+                        <div class="summary-label">Total Transaksi</div>
+                        <div class="summary-value">{{ $summary['total_bookings'] ?? 0 }}</div>
                     </div>
                     <div class="summary-cell">
                         <div class="summary-label">Total Pendapatan</div>
-                        <div class="summary-value">Rp {{ number_format($revenue_summary->total_revenue ?? 0, 0, ',', '.') }}</div>
+                        <div class="summary-value">Rp {{ number_format($summary['total_revenue'] ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                    <div class="summary-cell">
+                        <div class="summary-label">Sudah Dibayar</div>
+                        <div class="summary-value">Rp {{ number_format($summary['total_paid'] ?? 0, 0, ',', '.') }}</div>
+                    </div>
+                    <div class="summary-cell">
+                        <div class="summary-label">Belum Dibayar</div>
+                        <div class="summary-value">Rp {{ number_format($summary['total_unpaid'] ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Status Table -->
-        @if(isset($bookings_by_status) && count($bookings_by_status) > 0)
-        <div class="summary-title">Statistik Berdasarkan Status</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 70%">Status</th>
-                    <th style="width: 15%" class="text-center">Jumlah</th>
-                    <th style="width: 15%" class="text-center">Persentase</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($bookings_by_status as $status => $count)
-                <tr>
-                    <td>
-                        @if($status == 'completed')
-                            Selesai
-                        @elseif($status == 'cancelled')
-                            Dibatalkan
-                        @elseif($status == 'in_progress')
-                            Dalam Proses
-                        @elseif($status == 'ready_to_pickup')
-                            Siap Diambil
-                        @elseif($status == 'assigned')
-                            Ditugaskan
-                        @elseif($status == 'confirmed')
-                            Dikonfirmasi
-                        @else
-                            Menunggu
-                        @endif
-                    </td>
-                    <td class="text-center">{{ $count }}</td>
-                    <td class="text-center">
-                        @if($summary->total_bookings > 0)
-                            {{ round(($count / $summary->total_bookings) * 100, 1) }}%
-                        @else
-                            0%
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @endif
-
-        <!-- Detailed Transactions Table -->
-        @if(isset($transactions) && count($transactions) > 0)
-        <div class="summary-title" style="margin-top: 30px;">Detail Transaksi Penjualan</div>
+        <!-- Transaction Table -->
+        <div class="summary-title" style="margin-top: 30px;">Detail Transaksi</div>
         <table>
             <thead>
                 <tr>
                     <th style="width: 6%">No.</th>
                     <th style="width: 9%">Tanggal</th>
-                    <th style="width: 17%">Pelanggan</th>
-                    <th style="width: 15%">Kendaraan</th>
-                    <th style="width: 24%">Layanan & Jasa</th>
-                    <th style="width: 9%" class="text-center">Status</th>
-                    <th style="width: 10%" class="text-center">Pembayaran</th>
+                    <th style="width: 18%">Pelanggan</th>
+                    <th style="width: 16%">Kendaraan</th>
+                    <th style="width: 22%">Layanan</th>
+                    <th style="width: 10%" class="text-center">Status</th>
+                    <th style="width: 9%" class="text-center">Pembayaran</th>
                     <th style="width: 10%" class="text-right">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
                 @php $grandTotal = 0; @endphp
-                @foreach($transactions as $index => $booking)
+                @foreach($bookings as $index => $booking)
                 @php
                     $grandTotal += (float)$booking->final_amount;
                     $rowClass = ($index % 2 == 0) ? 'row-odd' : '';
@@ -274,42 +268,42 @@
                     </td>
                     <td>
                         @if($booking->user)
-                            <div class="vehicle-name">{{ $booking->user->name }}</div>
+                            <div class="customer-name">{{ $booking->user->name }}</div>
                             @if($booking->user->phone)
-                                <div class="vehicle-plate">{{ $booking->user->phone }}</div>
+                                <div class="customer-phone">{{ $booking->user->phone }}</div>
                             @endif
                         @endif
                     </td>
                     <td>
                         @if($booking->vehicle)
-                            <div class="vehicle-name">{{ $booking->vehicle->brand }} {{ $booking->vehicle->model }}</div>
+                            <div class="vehicle-info">{{ $booking->vehicle->brand }} {{ $booking->vehicle->model }}</div>
                             <div class="vehicle-plate">{{ $booking->vehicle->plate_number }}</div>
                             @if($booking->vehicle->year)
-                                <div class="vehicle-plate">{{ $booking->vehicle->year }}</div>
+                                <div class="customer-phone">{{ $booking->vehicle->year }}</div>
                             @endif
                         @endif
                     </td>
                     <td>
                         @if($booking->serviceItems && $booking->serviceItems->count() > 0)
-                            <div style="font-size: 9px; line-height: 1.4;">
-                                @foreach($booking->serviceItems->take(4) as $item)
-                                    <div>• {{ $item->name }} <span style="color: #666;">(Rp {{ number_format($item->pivot ? $item->pivot->subtotal : $item->price, 0, ',', '.') }})</span></div>
+                            <div class="mechanic-list">
+                                @foreach($booking->serviceItems->take(3) as $item)
+                                    <div>• {{ $item->name }}</div>
                                 @endforeach
-                                @if($booking->serviceItems->count() > 4)
-                                    <div style="color: #666;">+ {{ $booking->serviceItems->count() - 4 }} lainnya</div>
+                                @if($booking->serviceItems->count() > 3)
+                                    <div style="color: #666;">+ {{ $booking->serviceItems->count() - 3 }} lainnya</div>
                                 @endif
                             </div>
                         @else
                             <span style="color: #999;">-</span>
                         @endif
                         @if($booking->mechanics && $booking->mechanics->count() > 0)
-                            <div class="vehicle-plate" style="margin-top: 3px;">
+                            <div class="customer-phone" style="margin-top: 3px;">
                                 Mekanik: @foreach($booking->mechanics->take(2) as $mechanic){{ $mechanic->name }}{{ !$loop->last ? ', ' : '' }}@endforeach
                             </div>
                         @endif
                     </td>
                     <td class="text-center">
-                        <span style="font-size: 9px; text-transform: uppercase;">
+                        <span class="status-text">
                             @if($booking->status == 'completed')
                                 Selesai
                             @elseif($booking->status == 'cancelled')
@@ -328,7 +322,7 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <span style="font-size: 9px; text-transform: uppercase;">
+                        <span class="status-text">
                             @if($booking->payment_status == 'paid')
                                 Lunas
                             @elseif($booking->payment_status == 'unpaid')
@@ -339,7 +333,7 @@
                         </span>
                         @if($booking->payments && $booking->payments->count() > 0)
                             @foreach($booking->payments->take(1) as $payment)
-                                <div class="vehicle-plate">
+                                <div class="customer-phone">
                                     @if($payment->payment_method == 'cash')
                                         Tunai
                                     @elseif($payment->payment_method == 'transfer')
@@ -360,7 +354,7 @@
                 @endforeach
                 <tr class="total-row">
                     <td colspan="7" class="text-right">
-                        <span class="grand-total">Total Pendapatan</span>
+                        <span class="grand-total">Total Keseluruhan</span>
                     </td>
                     <td class="text-right">
                         <div class="amount" style="font-size: 13px;">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
@@ -368,42 +362,6 @@
                 </tr>
             </tbody>
         </table>
-        @endif
-
-        <!-- Top Vehicles Table -->
-        @if(isset($top_vehicles) && count($top_vehicles) > 0)
-        <div class="summary-title">Top Kendaraan (Berdasarkan Volume Servis)</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50%">Merk & Model</th>
-                    <th style="width: 25%" class="text-center">No. Plat</th>
-                    <th style="width: 25%" class="text-center">Total Servis</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($top_vehicles as $item)
-                <tr>
-                    <td>
-                        @if($item->vehicle)
-                            <div class="vehicle-name">{{ $item->vehicle->brand }} {{ $item->vehicle->model }}</div>
-                        @else
-                            <div style="color: #999;">Kendaraan dihapus</div>
-                        @endif
-                    </td>
-                    <td class="text-center">
-                        @if($item->vehicle)
-                            <div class="vehicle-plate">{{ $item->vehicle->plate_number }}</div>
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td class="text-center">{{ $item->booking_count }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @endif
 
         <!-- Footer -->
         <div class="footer">

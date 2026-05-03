@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator, Download } from 'lucide-react';
+import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator, Download, FileText, ArrowUpRight, Users } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -23,6 +23,9 @@ interface ReportsIndexProps {
         total_revenue: number | string | null;
         avg_revenue: number | string | null;
     };
+    allTimeRevenue?: number;
+    thisMonthRevenue?: number;
+    thisMonthCompleted?: number;
     filters: {
         date_from: string;
         date_to: string;
@@ -42,7 +45,7 @@ const toNumber = (value: number | string | null | undefined) => {
 const formatCurrency = (value: number | string | null | undefined) =>
     `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(toNumber(value))}`;
 
-export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSummary, filters }: ReportsIndexProps) {
+export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSummary, filters, allTimeRevenue = 0, thisMonthRevenue = 0, thisMonthCompleted = 0 }: ReportsIndexProps) {
     const statusEntries = Object.entries(bookingsByStatus || {});
 
     return (
@@ -81,12 +84,10 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Link href={`/admin/reports/export-pdf?date_from=${filters.date_from}&date_to=${filters.date_to}`}>
-                                        <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Ekspor PDF
-                                        </Button>
-                                    </Link>
+                                    <a href="/admin/reports/export-pdf" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg font-bold transition-colors inline-flex items-center">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Ekspor PDF
+                                    </a>
                                     <Link href="/admin/reports/revenue">
                                         <Button className="bg-white text-blue-700 hover:bg-blue-50">
                                             <TrendingUp className="mr-2 h-4 w-4" />
@@ -144,6 +145,54 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                     </div>
                 </section>
 
+                {/* All-Time Stats - Like Dashboard */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                Total Pendapatan
+                            </CardTitle>
+                            <div className="rounded-lg bg-blue-500 p-2">
+                                <DollarSign className="h-4 w-4 text-white" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(allTimeRevenue)}</p>
+                            <p className="text-[10px] text-slate-400 font-bold mt-1">SEJAS BENGKEL BEROPERASI</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                Pendapatan Bulan Ini
+                            </CardTitle>
+                            <div className="rounded-lg bg-emerald-500 p-2">
+                                <TrendingUp className="h-4 w-4 text-white" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(thisMonthRevenue)}</p>
+                            <p className="text-[10px] text-slate-400 font-bold mt-1">{thisMonthCompleted} SERVIS SELESAI</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                Total Pelanggan
+                            </CardTitle>
+                            <div className="rounded-lg bg-violet-500 p-2">
+                                <Users className="h-4 w-4 text-white" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-slate-900">{Object.values(bookingsByStatus).reduce((sum, count) => sum + count, 0)}</p>
+                            <p className="text-[10px] text-slate-400 font-bold mt-1">PELANGGAN TERDAFTAR</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 {/* Filter Card */}
                 <Card className="border-slate-200 bg-white">
                     <CardHeader>
@@ -187,6 +236,54 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                             <p className="text-2xl font-bold text-slate-900">{formatCurrency(revenueSummary?.avg_revenue)}</p>
                         </CardContent>
                     </Card>
+                </div>
+
+                {/* Quick Report Access */}
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Link href="/admin/reports/transactions">
+                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-blue-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <Activity className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-blue-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-blue-900">Laporan Transaksi</CardTitle>
+                                <CardDescription className="text-blue-700">Analisis transaksi service lengkap</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/admin/reports/invoices">
+                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-violet-50 to-violet-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-violet-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <FileText className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-violet-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-violet-900">Laporan Invoice</CardTitle>
+                                <CardDescription className="text-violet-700">Ringkasan invoice & pembayaran</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/admin/reports/revenue">
+                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-emerald-50 to-emerald-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-emerald-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <TrendingUp className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-emerald-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-emerald-900">Laporan Pendapatan</CardTitle>
+                                <CardDescription className="text-emerald-700">Analisis tren pendapatan bulanan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
                 </div>
 
                 {/* Detailed Charts */}
