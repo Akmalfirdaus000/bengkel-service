@@ -29,7 +29,7 @@
         <table class="info-grid">
             <tr>
                 <td>
-                    <div class="logo">Suja Bengkel</div>
+                    <div class="logo">Gama 2000 Auto Service</div>
                     <p>Jl. Raya Bengkel No. 123<br>Kota Bengkel, Indonesia<br>+62 812 3456 7890</p>
                 </td>
                 <td class="company-info">
@@ -97,7 +97,7 @@
         <div class="footer">
             <p>Terima kasih telah mempercayakan servis kendaraan Anda kepada kami.<br>
             Harap simpan invoice ini sebagai bukti servis resmi.</p>
-            <p style="font-weight: bold; margin-top: 10px;">&copy; {{ date('Y') }} Suja Bengkel Service Management</p>
+            <p style="font-weight: bold; margin-top: 10px;">&copy; {{ date('Y') }} Gama 2000 Auto Service Management</p>
         </div>
     </div>
 </body>

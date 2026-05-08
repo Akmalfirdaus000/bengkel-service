@@ -8,7 +8,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
     return (
         <>
-            <Head title="Suja Bengkel Service - Bengkel Mobil Profesional & Terpercaya" />
+            <Head title="Gama 2000 Auto Service - Bengkel Mobil Profesional & Terpercaya" />
             <div className="flex min-h-screen flex-col bg-background font-sans">
                 {/* Header / Navbar */}
                 <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-background/60 backdrop-blur-xl">
@@ -18,8 +18,8 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                 <Wrench className="h-6 w-6 text-primary-foreground" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xl font-extrabold tracking-tight leading-none">SUJA</span>
-                                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Bengkel Service</span>
+                                <span className="text-xl font-extrabold tracking-tight leading-none">GAMA 2000</span>
+                                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Auto Service</span>
                             </div>
                         </div>
                         <nav className="hidden items-center gap-8 md:flex">
@@ -204,7 +204,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                             <div className="grid gap-16 lg:grid-cols-2 items-center">
                                 <div className="space-y-8 text-primary-foreground">
                                     <div className="space-y-4">
-                                        <h2 className="text-sm font-bold uppercase tracking-[0.3em] opacity-80">Mengapa SUJA?</h2>
+                                        <h2 className="text-sm font-bold uppercase tracking-[0.3em] opacity-80">Mengapa GAMA 2000?</h2>
                                         <h3 className="text-4xl font-black tracking-tight sm:text-5xl">
                                             Komitmen Kami pada <br />
                                             Kualitas & Transparansi
@@ -267,7 +267,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     {
                                         name: 'Ahmad Santoso',
                                         role: 'Pemilik Toyota Fortuner',
-                                        content: 'Sudah 5 tahun servis rutin di Suja. Mekaniknya jujur banget, kalau masih bagus dibilang bagus, nggak asal suruh ganti.',
+                                        content: 'Sudah 5 tahun servis rutin di Gama 2000. Mekaniknya jujur banget, kalau masih bagus dibilang bagus, nggak asal suruh ganti.',
                                         rating: 5,
                                         image: 'AS'
                                     },
@@ -351,7 +351,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
                                         <Wrench className="h-5 w-5 text-primary-foreground" />
                                     </div>
-                                    <span className="text-xl font-black tracking-tight">SUJA</span>
+                                    <span className="text-xl font-black tracking-tight">GAMA 2000</span>
                                 </div>
                                 <p className="text-sm font-medium leading-relaxed text-muted-foreground">
                                     Bengkel mobil profesional yang mengedepankan kualitas, transparansi, dan kepuasan pelanggan di setiap layanan kami.
@@ -393,13 +393,13 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     </li>
                                     <li className="flex items-center gap-3">
                                         <Mail className="h-5 w-5 text-primary shrink-0" />
-                                        <span>halo@sujabengkel.com</span>
+                                        <span>halo@gama2000.com</span>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                         <div className="mt-20 border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-bold text-muted-foreground">
-                            <p>&copy; {new Date().getFullYear()} SUJA Bengkel Service. Hak Cipta Dilindungi.</p>
+                            <p>&copy; {new Date().getFullYear()} Gama 2000 Auto Service. Hak Cipta Dilindungi.</p>
                             <div className="flex gap-8">
                                 <span className="hover:text-foreground transition-colors cursor-pointer">Terms</span>
                                 <span className="hover:text-foreground transition-colors cursor-pointer">Privacy</span>

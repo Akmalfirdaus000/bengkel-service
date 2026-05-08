@@ -72,7 +72,7 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                                             Live
                                         </Badge>
                                         <Badge variant="outline" className="border-white/30 text-white/90 text-xs">
-                                            Bengkel Service
+                                            Gama 2000 Auto Service
                                         </Badge>
                                     </div>
                                     <h1 className="text-3xl font-bold text-white">
@@ -158,7 +158,7 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold text-slate-900">{formatCurrency(allTimeRevenue)}</p>
-                            <p className="text-[10px] text-slate-400 font-bold mt-1">SEJAS BENGKEL BEROPERASI</p>
+                            <p className="text-[10px] text-slate-400 font-bold mt-1">SEJAK GAMA 2000 BEROPERASI</p>
                         </CardContent>
                     </Card>
 

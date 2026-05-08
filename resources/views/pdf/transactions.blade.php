@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Daftar Transaksi - Suja Bengkel</title>
+    <title>Daftar Transaksi - Gama 2000 Auto Service</title>
     <style>
         body { font-family: 'Helvetica', sans-serif; color: #333; line-height: 1.4; font-size: 10px; }
         .container { padding: 15px; }
@@ -67,7 +67,7 @@
         </table>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} Suja Bengkel Service Management Platform</p>
+            <p>&copy; {{ date('Y') }} Gama 2000 Auto Service Management Platform</p>
         </div>
     </div>
 </body>

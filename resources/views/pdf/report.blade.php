@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Bisnis - Suja Bengkel</title>
+    <title>Laporan Bisnis - Gama 2000 Auto Service</title>
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -165,7 +165,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="company-name">SUJA BENGKEL</div>
+            <div class="company-name">GAMA 2000 AUTO SERVICE</div>
             <div class="report-title">LAPORAN OPERASIONAL & PENDAPATAN</div>
             <div class="report-period">
                 Periode: {{ \Carbon\Carbon::parse($date_from)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($date_to)->format('d/m/Y') }}
@@ -407,9 +407,9 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p><strong>SUJA BENGKEL SERVICE</strong></p>
+            <p><strong>GAMA 2000 AUTO SERVICE</strong></p>
             <p>Laporan ini dicetak secara otomatis oleh sistem pada {{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}</p>
-            <p>&copy; {{ date('Y') }} Suja Bengkel. Seluruh hak cipta dilindungi.</p>
+            <p>&copy; {{ date('Y') }} Gama 2000 Auto Service. Seluruh hak cipta dilindungi.</p>
         </div>
     </div>
 </body>

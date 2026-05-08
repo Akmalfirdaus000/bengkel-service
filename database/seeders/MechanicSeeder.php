@@ -16,7 +16,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Budi Santoso',
                 'phone' => '081234567891',
-                'email' => 'budi@sujabengkel.com',
+                'email' => 'budi@gama2000.com',
                 'specialization' => 'Engine Specialist',
                 'is_available' => true,
                 'is_active' => true,
@@ -24,7 +24,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Ahmad Pratama',
                 'phone' => '081234567892',
-                'email' => 'ahmad@sujabengkel.com',
+                'email' => 'ahmad@gama2000.com',
                 'specialization' => 'Brake & Suspension',
                 'is_available' => true,
                 'is_active' => true,
@@ -32,7 +32,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Dedi Kurniawan',
                 'phone' => '081234567893',
-                'email' => 'dedi@sujabengkel.com',
+                'email' => 'dedi@gama2000.com',
                 'specialization' => 'Electrical Systems',
                 'is_available' => true,
                 'is_active' => true,
@@ -40,7 +40,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Rudi Hartono',
                 'phone' => '081234567894',
-                'email' => 'rudi@sujabengkel.com',
+                'email' => 'rudi@gama2000.com',
                 'specialization' => 'AC & Climate Control',
                 'is_available' => true,
                 'is_active' => true,
@@ -48,7 +48,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Fajar Nugraha',
                 'phone' => '081234567895',
-                'email' => 'fajar@sujabengkel.com',
+                'email' => 'fajar@gama2000.com',
                 'specialization' => 'General Service',
                 'is_available' => true,
                 'is_active' => true,
@@ -56,7 +56,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Hendra Wijaya',
                 'phone' => '081234567896',
-                'email' => 'hendra@sujabengkel.com',
+                'email' => 'hendra@gama2000.com',
                 'specialization' => 'Engine Specialist',
                 'is_available' => true,
                 'is_active' => true,
@@ -64,7 +64,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Irfan Maulana',
                 'phone' => '081234567897',
-                'email' => 'irfan@sujabengkel.com',
+                'email' => 'irfan@gama2000.com',
                 'specialization' => 'Transmission',
                 'is_available' => true,
                 'is_active' => true,
@@ -72,7 +72,7 @@ class MechanicSeeder extends Seeder
             [
                 'name' => 'Joko Susilo',
                 'phone' => '081234567898',
-                'email' => 'joko@sujabengkel.com',
+                'email' => 'joko@gama2000.com',
                 'specialization' => 'General Service',
                 'is_available' => true,
                 'is_active' => true,

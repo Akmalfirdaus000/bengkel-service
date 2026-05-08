@@ -13,10 +13,10 @@ class OwnerSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'owner@sujabengkel.com'],
+            ['email' => 'owner@gama2000.com'],
             [
                 'name' => 'Owner Pemilik',
-                'email' => 'owner@sujabengkel.com',
+                'email' => 'owner@gama2000.com',
                 'password' => bcrypt('password'),
                 'role' => 'owner',
                 'phone' => '081122334455',

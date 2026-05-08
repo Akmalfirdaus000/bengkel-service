@@ -177,7 +177,7 @@ export default function AdminDashboard({
                                             Live
                                         </Badge>
                                         <Badge variant="outline" className="border-white/30 text-white/90 text-xs">
-                                            Bengkel Service
+                                            Gama 2000 Auto Service
                                         </Badge>
                                     </div>
                                     <h1 className="text-3xl font-bold text-white">
@@ -533,7 +533,7 @@ export default function AdminDashboard({
                             <div className="flex items-center gap-2">
                                 <Building2 className="h-4 w-4 text-slate-400" />
                                 <span>
-                                    <strong className="text-slate-900">Bengkel Service</strong> - Management System
+                                    <strong className="text-slate-900">Gama 2000 Auto Service</strong> - Management System
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export default function AdminDashboard({
                             </div>
                         </div>
                         <p className="text-xs text-slate-500">
-                            © {new Date().getFullYear()} Bengkel Service. All rights reserved.
+                            © {new Date().getFullYear()} Gama 2000 Auto Service. All rights reserved.
                         </p>
                     </div>
                 </section>

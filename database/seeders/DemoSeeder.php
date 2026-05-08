@@ -116,9 +116,9 @@ class DemoSeeder extends Seeder
         $replaceBrakePad = ServiceSubItem::where('slug', 'ganti-kampas-rem')->first();
 
         // Get mechanics
-        $mechanic1 = Mechanic::where('email', 'budi@sujabengkel.com')->first();
-        $mechanic2 = Mechanic::where('email', 'ahmad@sujabengkel.com')->first();
-        $mechanic3 = Mechanic::where('email', 'dedi@sujabengkel.com')->first();
+        $mechanic1 = Mechanic::where('email', 'budi@gama2000.com')->first();
+        $mechanic2 = Mechanic::where('email', 'ahmad@gama2000.com')->first();
+        $mechanic3 = Mechanic::where('email', 'dedi@gama2000.com')->first();
 
         // Create demo bookings
         $today = now();
@@ -238,7 +238,7 @@ class DemoSeeder extends Seeder
         }
 
         $this->command->info('Demo data seeded successfully!');
-        $this->command->info('Admin credentials: admin@sujabengkel.com / password');
+        $this->command->info('Admin credentials: admin@gama2000.com / password');
         $this->command->info('Demo user credentials: john@example.com / password');
     }
 }
