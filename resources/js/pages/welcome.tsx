@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wrench, Calendar, Shield, Star, Users, Clock, CheckCircle, ArrowRight, MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Wrench, Calendar, Shield, Users, ArrowRight, MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
 
 export default function Welcome({ canRegister = true }: { canRegister?: boolean }) {
     const { auth } = usePage().props;
@@ -23,9 +23,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                             </div>
                         </div>
                         <nav className="hidden items-center gap-8 md:flex">
-                            <a href="#services" className="text-sm font-semibold transition-colors hover:text-primary">Layanan</a>
-                            <a href="#about" className="text-sm font-semibold transition-colors hover:text-primary">Tentang Kami</a>
-                            <a href="#testimonials" className="text-sm font-semibold transition-colors hover:text-primary">Testimoni</a>
+                            <a href="#tutorial" className="text-sm font-semibold transition-colors hover:text-primary">Panduan Aplikasi</a>
                             <div className="h-4 w-[1px] bg-border"></div>
                             {auth.user ? (
                                 <Link href="/dashboard">
@@ -34,17 +32,12 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                             ) : (
                                 <div className="flex items-center gap-3">
                                     <Link href="/login">
-                                        <Button variant="ghost" className="rounded-full px-6">Masuk</Button>
+                                        <Button className="rounded-full px-6 shadow-md shadow-primary/10">Masuk</Button>
                                     </Link>
-                                    {canRegister && (
-                                        <Link href="/register">
-                                            <Button className="rounded-full px-6 shadow-md shadow-primary/10">Daftar</Button>
-                                        </Link>
-                                    )}
                                 </div>
                             )}
                         </nav>
-                        {/* Mobile Menu Button - Placeholder for functionality if needed */}
+                        {/* Mobile Menu Button */}
                         <div className="md:hidden">
                             <Button variant="ghost" size="icon">
                                 <Users className="h-6 w-6" />
@@ -78,12 +71,11 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     Bengkel Mobil Profesional #1
                                 </div>
                                 <h1 className="text-5xl font-black tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-                                    Perawatan Mobil <br />
-                                    <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Tanpa Khawatir</span>
+                                    Booking Servis <br />
+                                    <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Makin Mudah</span>
                                 </h1>
                                 <p className="max-w-[600px] text-lg text-muted-foreground md:text-xl/relaxed">
-                                    Nikmati layanan otomotif premium dengan tim mekanik tersertifikasi. 
-                                    Kami memberikan transparansi total, harga kompetitif, dan garansi kepuasan pelanggan.
+                                    Gunakan aplikasi kami untuk menjadwalkan perbaikan dan perawatan mobil Anda. Ikuti panduan mudah dari login hingga proses booking selesai.
                                 </p>
                                 <div className="flex flex-col gap-4 sm:flex-row pt-4">
                                     {auth.user ? (
@@ -95,15 +87,15 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                         </Link>
                                     ) : (
                                         <>
-                                            <Link href="/register">
+                                            <Link href="/login">
                                                 <Button size="lg" className="h-14 rounded-full px-8 text-base font-bold shadow-xl shadow-primary/20">
-                                                    Mulai Servis Pertama
+                                                    Masuk ke Akun
                                                     <ArrowRight className="ml-2 h-5 w-5" />
                                                 </Button>
                                             </Link>
-                                            <Link href="#services">
+                                            <Link href="#tutorial">
                                                 <Button size="lg" variant="outline" className="h-14 rounded-full px-8 text-base font-bold backdrop-blur-sm">
-                                                    Lihat Layanan Kami
+                                                    Lihat Panduan
                                                 </Button>
                                             </Link>
                                         </>
@@ -129,213 +121,133 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                         </div>
                     </section>
 
-                    {/* Services Section */}
-                    <section id="services" className="relative py-24 md:py-32">
+                    {/* Tutorial Section */}
+                    <section id="tutorial" className=" flex justify-center mx-auto  py-24 md:py-32 bg-muted/10">
                         <div className="container px-4 md:px-6">
                             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
-                                <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-primary">Layanan Kami</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-primary">Cara Penggunaan</h2>
                                 <h3 className="text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-                                    Solusi Lengkap Perawatan Kendaraan
+                                    Panduan Menggunakan Aplikasi
                                 </h3>
                                 <p className="max-w-[700px] text-lg text-muted-foreground">
-                                    Kami menyediakan berbagai layanan teknis profesional untuk memastikan kendaraan Anda selalu dalam kondisi terbaik.
+                                    Ikuti langkah-langkah sederhana berikut untuk mulai melakukan booking servis kendaraan Anda di bengkel kami.
                                 </p>
                             </div>
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                {[
-                                    {
-                                        icon: Wrench,
-                                        title: 'Perawatan Berkala',
-                                        description: 'Ganti oli, filter, dan pengecekan menyeluruh untuk menjaga performa mesin tetap stabil.',
-                                        color: 'bg-blue-500/10 text-blue-500'
-                                    },
-                                    {
-                                        icon: Shield,
-                                        title: 'Diagnostik Komputer',
-                                        description: 'Deteksi dini masalah mesin dengan peralatan scanner terbaru yang akurat dan cepat.',
-                                        color: 'bg-green-500/10 text-green-500'
-                                    },
-                                    {
-                                        icon: Calendar,
-                                        title: 'Sistem Rem & Kaki-Kaki',
-                                        description: 'Perawatan sistem pengereman dan suspensi untuk kenyamanan dan keamanan berkendara.',
-                                        color: 'bg-red-500/10 text-red-500'
-                                    },
-                                    {
-                                        icon: Users,
-                                        title: 'Servis AC & Kelistrikan',
-                                        description: 'Memastikan AC tetap sejuk dan sistem kelistrikan mobil berfungsi normal tanpa kendala.',
-                                        color: 'bg-yellow-500/10 text-yellow-500'
-                                    },
-                                    {
-                                        icon: Clock,
-                                        title: 'Servis Express',
-                                        description: 'Layanan cepat untuk perbaikan ringan bagi Anda yang memiliki jadwal padat.',
-                                        color: 'bg-purple-500/10 text-purple-500'
-                                    },
-                                    {
-                                        icon: CheckCircle,
-                                        title: 'General Overhaul',
-                                        description: 'Perbaikan berat dan turun mesin dengan garansi kualitas pengerjaan terbaik.',
-                                        color: 'bg-orange-500/10 text-orange-500'
-                                    },
-                                ].map((service, index) => (
-                                    <Card key={index} className="group relative overflow-hidden border-none bg-muted/30 transition-all hover:bg-muted/50 hover:shadow-2xl hover:shadow-primary/5">
-                                        <CardContent className="p-8">
-                                            <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${service.color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-                                                <service.icon className="h-7 w-7" />
+                            
+                            <div className="relative mx-auto max-w-5xl flex justify-center">
+                                <div className="w-full">
+                                    {/* Connecting line for desktop */}
+                                    <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-border hidden md:block -translate-x-1/2"></div>
+                                    
+                                    <div className="space-y-12 md:space-y-0 relative">
+                                        {/* Step 1 */}
+                                        <div className="md:grid md:grid-cols-2 items-center md:pb-24 group relative">
+                                            {/* Left Side */}
+                                            <div className="md:pr-12 mb-8 md:mb-0 text-center md:text-right relative">
+                                                <h4 className="text-2xl font-bold mb-3">Login ke Aplikasi</h4>
+                                                <p className="text-muted-foreground leading-relaxed text-lg">
+                                                    Masuk menggunakan akun customer Anda. Jika Anda pelanggan baru dan belum memiliki akun, silakan hubungi admin atau datang langsung ke bengkel.
+                                                </p>
                                             </div>
-                                            <h4 className="mb-3 text-xl font-bold">{service.title}</h4>
-                                            <p className="text-muted-foreground leading-relaxed">{service.description}</p>
-                                            <div className="mt-6 flex items-center text-sm font-bold text-primary opacity-0 transition-all group-hover:opacity-100">
-                                                Pelajari Selengkapnya <ArrowRight className="ml-2 h-4 w-4" />
+                                            {/* Center Circle */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10">
+                                                1
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
+                                            {/* Mobile Circle */}
+                                            <div className="md:hidden mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10 mb-6">
+                                                1
+                                            </div>
+                                            {/* Right Side */}
+                                            <div className="md:pl-12 flex justify-center md:justify-start">
+                                                <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-sm overflow-hidden group-hover:shadow-primary/10 transition-all duration-300 w-full max-w-sm">
+                                                    <CardContent className="p-8 flex items-center justify-center bg-gradient-to-br from-blue-500/10 to-transparent">
+                                                        <Users className="h-24 w-24 text-blue-500/80" />
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Step 2 */}
+                                        <div className="md:grid md:grid-cols-2 items-center md:pb-24 group relative flex flex-col-reverse md:flex-row">
+                                            {/* Left Side */}
+                                            <div className="md:pr-12 mt-8 md:mt-0 flex justify-center md:justify-end">
+                                                <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-sm overflow-hidden group-hover:shadow-primary/10 transition-all duration-300 w-full max-w-sm">
+                                                    <CardContent className="p-8 flex items-center justify-center bg-gradient-to-br from-green-500/10 to-transparent">
+                                                        <Shield className="h-24 w-24 text-green-500/80" />
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                            {/* Center Circle */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10">
+                                                2
+                                            </div>
+                                            {/* Mobile Circle */}
+                                            <div className="md:hidden mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10 mb-6">
+                                                2
+                                            </div>
+                                            {/* Right Side */}
+                                            <div className="md:pl-12 text-center md:text-left relative z-10">
+                                                <h4 className="text-2xl font-bold mb-3">Daftarkan Kendaraan</h4>
+                                                <p className="text-muted-foreground leading-relaxed text-lg">
+                                                    Masuk ke menu kendaraan di dashboard dan tambahkan profil mobil Anda. Informasi ini membantu mekanik kami menyiapkan penanganan yang tepat.
+                                                </p>
+                                            </div>
+                                        </div>
 
-                    {/* Why Choose Us / About Section */}
-                    <section id="about" className="relative overflow-hidden bg-primary py-24 md:py-32">
-                        <div className="absolute top-0 right-0 h-full w-1/3 bg-white/5 skew-x-12 translate-x-1/2" />
-                        <div className="container relative z-10 px-4 md:px-6">
-                            <div className="grid gap-16 lg:grid-cols-2 items-center">
-                                <div className="space-y-8 text-primary-foreground">
-                                    <div className="space-y-4">
-                                        <h2 className="text-sm font-bold uppercase tracking-[0.3em] opacity-80">Mengapa GAMA 2000?</h2>
-                                        <h3 className="text-4xl font-black tracking-tight sm:text-5xl">
-                                            Komitmen Kami pada <br />
-                                            Kualitas & Transparansi
-                                        </h3>
-                                        <p className="text-lg opacity-90 leading-relaxed">
-                                            Sejak 10 tahun lalu, kami percaya bahwa setiap pelanggan berhak mendapatkan layanan terbaik tanpa ada biaya tersembunyi. Mekanik kami bukan hanya pekerja, tapi konsultan otomotif Anda.
-                                        </p>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {[
-                                            'Mekanik Bersertifikat Internasional',
-                                            'Sparepart Original & Bergaransi',
-                                            'Estimasi Biaya Transparan di Awal',
-                                            'Peralatan Bengkel Modern & Lengkap',
-                                            'Update Progress Servis Real-time'
-                                        ].map((item, index) => (
-                                            <div key={index} className="flex items-center gap-4">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary">
-                                                    <CheckCircle className="h-4 w-4" />
-                                                </div>
-                                                <span className="font-bold text-lg">{item}</span>
+                                        {/* Step 3 */}
+                                        <div className="md:grid md:grid-cols-2 items-center md:pb-24 group relative">
+                                            {/* Left Side */}
+                                            <div className="md:pr-12 mb-8 md:mb-0 text-center md:text-right relative">
+                                                <h4 className="text-2xl font-bold mb-3">Pilih Layanan Servis</h4>
+                                                <p className="text-muted-foreground leading-relaxed text-lg">
+                                                    Tentukan jenis keluhan atau perawatan yang Anda butuhkan. Anda bisa memilih dari layanan servis berkala hingga pengecekan khusus.
+                                                </p>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="relative">
-                                    <div className="relative aspect-video overflow-hidden rounded-3xl shadow-2xl">
-                                        <img 
-                                            src="/images/about.png" 
-                                            alt="Mechanic Service" 
-                                            className="h-full w-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
-                                    </div>
-                                    <div className="absolute -bottom-8 -left-8 rounded-3xl bg-background p-8 shadow-2xl hidden md:block border border-border">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex gap-1">
-                                                {[1, 2, 3, 4, 5].map((_, i) => (
-                                                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                                                ))}
+                                            {/* Center Circle */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10">
+                                                3
                                             </div>
-                                            <p className="text-2xl font-black">4.9/5</p>
-                                            <p className="text-sm font-semibold text-muted-foreground">Rating Kepuasan Pelanggan</p>
+                                            {/* Mobile Circle */}
+                                            <div className="md:hidden mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10 mb-6">
+                                                3
+                                            </div>
+                                            {/* Right Side */}
+                                            <div className="md:pl-12 flex justify-center md:justify-start">
+                                                <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-sm overflow-hidden group-hover:shadow-primary/10 transition-all duration-300 w-full max-w-sm">
+                                                    <CardContent className="p-8 flex items-center justify-center bg-gradient-to-br from-orange-500/10 to-transparent">
+                                                        <Wrench className="h-24 w-24 text-orange-500/80" />
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Step 4 */}
+                                        <div className="md:grid md:grid-cols-2 items-center group relative flex flex-col-reverse md:flex-row">
+                                            {/* Left Side */}
+                                            <div className="md:pr-12 mt-8 md:mt-0 flex justify-center md:justify-end">
+                                                <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-sm overflow-hidden group-hover:shadow-primary/10 transition-all duration-300 w-full max-w-sm">
+                                                    <CardContent className="p-8 flex items-center justify-center bg-gradient-to-br from-purple-500/10 to-transparent">
+                                                        <Calendar className="h-24 w-24 text-purple-500/80" />
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                            {/* Center Circle */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10">
+                                                4
+                                            </div>
+                                            {/* Mobile Circle */}
+                                            <div className="md:hidden mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground text-2xl font-black shadow-xl border-4 border-background z-10 mb-6">
+                                                4
+                                            </div>
+                                            {/* Right Side */}
+                                            <div className="md:pl-12 text-center md:text-left relative z-10">
+                                                <h4 className="text-2xl font-bold mb-3">Selesaikan Booking</h4>
+                                                <p className="text-muted-foreground leading-relaxed text-lg">
+                                                    Pilih jadwal yang sesuai dengan waktu luang Anda, konfirmasi detail pesanan, dan silakan datang ke bengkel sesuai jadwal!
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Testimonials Section */}
-                    <section id="testimonials" className="py-24 md:py-32">
-                        <div className="container px-4 md:px-6">
-                            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
-                                <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-primary">Testimoni</h2>
-                                <h3 className="text-3xl font-black tracking-tight sm:text-4xl">Suara Pelanggan Setia Kami</h3>
-                            </div>
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                {[
-                                    {
-                                        name: 'Ahmad Santoso',
-                                        role: 'Pemilik Toyota Fortuner',
-                                        content: 'Sudah 5 tahun servis rutin di Gama 2000. Mekaniknya jujur banget, kalau masih bagus dibilang bagus, nggak asal suruh ganti.',
-                                        rating: 5,
-                                        image: 'AS'
-                                    },
-                                    {
-                                        name: 'Sarah Wijaya',
-                                        role: 'Pengguna Honda HR-V',
-                                        content: 'Paling suka sama sistem bookingnya. Datang langsung dikerjakan, nggak perlu antre lama. Ruang tunggunya juga nyaman.',
-                                        rating: 5,
-                                        image: 'SW'
-                                    },
-                                    {
-                                        name: 'Budi Pratama',
-                                        role: 'Mitra Armada Logistik',
-                                        content: 'Partner servis terbaik untuk armada kantor kami. Harga kompetitif dan pengerjaannya sangat teliti.',
-                                        rating: 5,
-                                        image: 'BP'
-                                    },
-                                ].map((testimonial, index) => (
-                                    <Card key={index} className="border-none bg-muted/20 p-4">
-                                        <CardContent className="p-6">
-                                            <div className="flex gap-1 mb-6">
-                                                {Array.from({ length: testimonial.rating }).map((_, i) => (
-                                                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                ))}
-                                            </div>
-                                            <p className="mb-8 text-lg font-medium leading-relaxed italic text-muted-foreground">"{testimonial.content}"</p>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
-                                                    {testimonial.image}
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold">{testimonial.name}</p>
-                                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{testimonial.role}</p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* CTA Section */}
-                    <section className="relative overflow-hidden py-24 md:py-32">
-                        <div className="container px-4 md:px-6 relative z-10">
-                            <div className="flex flex-col items-center gap-8 rounded-[3rem] bg-foreground p-12 text-center text-background md:p-24 shadow-3xl">
-                                <h2 className="text-4xl font-black tracking-tight sm:text-6xl max-w-[800px]">
-                                    Siap Mengembalikan Performa Mobil Anda?
-                                </h2>
-                                <p className="max-w-[600px] text-lg opacity-80 md:text-xl">
-                                    Booking jadwal servis Anda hari ini dan nikmati kenyamanan berkendara maksimal tanpa rasa khawatir.
-                                </p>
-                                <div className="flex flex-col gap-4 sm:flex-row">
-                                    {auth.user ? (
-                                        <Link href="/user/bookings/create">
-                                            <Button size="lg" className="h-14 rounded-full bg-primary px-10 text-lg font-bold text-primary-foreground hover:bg-primary/90">
-                                                Booking Sekarang
-                                                <ArrowRight className="ml-2 h-5 w-5" />
-                                            </Button>
-                                        </Link>
-                                    ) : (
-                                        <Link href="/register">
-                                            <Button size="lg" className="h-14 rounded-full bg-primary px-10 text-lg font-bold text-primary-foreground hover:bg-primary/90">
-                                                Daftar Sekarang & Booking
-                                                <ArrowRight className="ml-2 h-5 w-5" />
-                                            </Button>
-                                        </Link>
-                                    )}
                                 </div>
                             </div>
                         </div>

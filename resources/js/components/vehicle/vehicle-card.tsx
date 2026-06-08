@@ -10,6 +10,8 @@ interface VehicleCardProps {
         brand: string;
         model: string;
         plate_number: string;
+        engine_number?: string;
+        frame_number?: string;
         year?: string;
         color?: string;
         is_active: boolean;
@@ -59,14 +61,26 @@ export function VehicleCard({ vehicle, showActions = false, deleteUrl, editUrl }
                 <div className="grid grid-cols-2 gap-2 text-sm">
                     {vehicle.year && (
                         <div>
-                            <span className="text-muted-foreground">Year:</span>
+                            <span className="text-muted-foreground">Tahun:</span>
                             <span className="ml-2 font-medium">{vehicle.year}</span>
                         </div>
                     )}
                     {vehicle.color && (
                         <div>
-                            <span className="text-muted-foreground">Color:</span>
+                            <span className="text-muted-foreground">Warna:</span>
                             <span className="ml-2 font-medium">{vehicle.color}</span>
+                        </div>
+                    )}
+                    {vehicle.engine_number && (
+                        <div>
+                            <span className="text-muted-foreground">No. Mesin:</span>
+                            <span className="ml-2 font-medium">{vehicle.engine_number}</span>
+                        </div>
+                    )}
+                    {vehicle.frame_number && (
+                        <div>
+                            <span className="text-muted-foreground">No. Rangka:</span>
+                            <span className="ml-2 font-medium">{vehicle.frame_number}</span>
                         </div>
                     )}
                 </div>

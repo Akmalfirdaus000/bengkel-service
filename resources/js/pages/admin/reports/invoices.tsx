@@ -57,7 +57,12 @@ interface InvoicesReportProps {
     bookings: {
         data: Invoice[];
         links: any[];
-        meta: Pagination;
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from?: number;
+        to?: number;
     };
     summary: {
         total_invoices: number;
@@ -154,12 +159,12 @@ export default function InvoicesReport({ bookings, summary, filters }: InvoicesR
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Link href={`/admin/reports/invoices/export-pdf?date_from=${filters.date_from}&date_to=${filters.date_to}&payment_status=${filters.payment_status}`}>
+                                    <a href={`/admin/reports/invoices/export-pdf?date_from=${filters.date_from}&date_to=${filters.date_to}&payment_status=${filters.payment_status}`}>
                                         <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
                                             <Download className="mr-2 h-4 w-4" />
                                             Export PDF
                                         </Button>
-                                    </Link>
+                                    </a>
                                     <Link href="/admin/reports">
                                         <Button className="bg-white/20 text-white hover:bg-white/30 border border-white/30">
                                             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -400,10 +405,10 @@ export default function InvoicesReport({ bookings, summary, filters }: InvoicesR
                         </div>
 
                         {/* Pagination */}
-                        {bookings.meta.last_page > 1 && (
+                        {bookings.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
-                                    Menampilkan {bookings.meta.from} - {bookings.meta.to} dari {bookings.meta.total} data
+                                    Menampilkan {bookings.from} - {bookings.to} dari {bookings.total} data
                                 </div>
                                 <div className="flex gap-2">
                                     {bookings.links.map((link, idx) => (

@@ -27,6 +27,14 @@ Route::middleware(['auth', 'verified', 'isOwner'])
             ->name('reports.invoices');
         Route::get('/reports/invoices/export-pdf', [\App\Http\Controllers\Owner\ReportController::class, 'exportInvoices'])
             ->name('reports.invoices.export-pdf');
+        Route::get('/reports/customers', [\App\Http\Controllers\Owner\ReportController::class, 'customers'])
+            ->name('reports.customers');
+        Route::get('/reports/customers/export-pdf', [\App\Http\Controllers\Owner\ReportController::class, 'exportCustomers'])
+            ->name('reports.customers.export-pdf');
+        Route::get('/reports/services', [\App\Http\Controllers\Owner\ReportController::class, 'services'])
+            ->name('reports.services');
+        Route::get('/reports/services/export-pdf', [\App\Http\Controllers\Owner\ReportController::class, 'exportServices'])
+            ->name('reports.services.export-pdf');
         
         // Workshop Status & Mechanics (Placeholders for now, pointing to existing admin logic or custom ones)
         Route::get('/workshop-status', [OwnerDashboardController::class, 'workshopStatus'])

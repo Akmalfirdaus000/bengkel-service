@@ -14,6 +14,8 @@ interface EditVehicleProps {
         brand: string;
         model: string;
         plate_number: string;
+        engine_number?: string;
+        frame_number?: string;
         year?: string;
         color?: string;
         notes?: string;
@@ -31,6 +33,8 @@ export default function EditVehicle({ vehicle }: EditVehicleProps) {
         brand: vehicle.brand,
         model: vehicle.model,
         plate_number: vehicle.plate_number,
+        engine_number: vehicle.engine_number || '',
+        frame_number: vehicle.frame_number || '',
         year: vehicle.year || '',
         color: vehicle.color || '',
         notes: vehicle.notes || '',
@@ -144,6 +148,34 @@ export default function EditVehicle({ vehicle }: EditVehicleProps) {
                                     />
                                     {errors.plate_number && (
                                         <p className="text-sm text-red-600">{errors.plate_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="engine_number" className="text-slate-700">No. Seri Mesin</Label>
+                                    <Input
+                                        id="engine_number"
+                                        className="border-slate-200"
+                                        value={data.engine_number}
+                                        onChange={(e) => setData('engine_number', e.target.value)}
+                                        placeholder="Contoh: M123456789"
+                                    />
+                                    {errors.engine_number && (
+                                        <p className="text-sm text-red-600">{errors.engine_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="frame_number" className="text-slate-700">No. Seri Rangka</Label>
+                                    <Input
+                                        id="frame_number"
+                                        className="border-slate-200"
+                                        value={data.frame_number}
+                                        onChange={(e) => setData('frame_number', e.target.value)}
+                                        placeholder="Contoh: MH123456789012345"
+                                    />
+                                    {errors.frame_number && (
+                                        <p className="text-sm text-red-600">{errors.frame_number}</p>
                                     )}
                                 </div>
 

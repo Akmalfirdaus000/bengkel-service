@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator, Download, FileText, ArrowUpRight, Users } from 'lucide-react';
+import { BarChart3, Car, TrendingUp, Activity, Calendar, DollarSign, Calculator, Download, FileText, ArrowUpRight, Users, Wrench } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -84,14 +84,24 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <a href="/admin/reports/export-pdf" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg font-bold transition-colors inline-flex items-center">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Ekspor PDF
-                                    </a>
+                                    <div className="flex flex-col gap-2">
+                                        <a href="/admin/reports/export-pdf" target="_blank" rel="noopener noreferrer" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg font-bold transition-colors inline-flex items-center text-sm">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Export PDF (Pendapatan)
+                                        </a>
+                                        <a href="/admin/reports/customers/export-pdf" target="_blank" rel="noopener noreferrer" className="bg-sky-600 text-white hover:bg-sky-700 px-4 py-2 rounded-lg font-bold transition-colors inline-flex items-center text-sm">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Export PDF (Customer)
+                                        </a>
+                                        <a href="/admin/reports/services/export-pdf" target="_blank" rel="noopener noreferrer" className="bg-amber-600 text-white hover:bg-amber-700 px-4 py-2 rounded-lg font-bold transition-colors inline-flex items-center text-sm">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Export PDF (Servis)
+                                        </a>
+                                    </div>
                                     <Link href="/admin/reports/revenue">
-                                        <Button className="bg-white text-blue-700 hover:bg-blue-50">
+                                        <Button className="bg-white text-blue-700 hover:bg-blue-50 h-full">
                                             <TrendingUp className="mr-2 h-4 w-4" />
-                                            Laporan Pendapatan
+                                            Dashboard Pendapatan
                                         </Button>
                                     </Link>
                                 </div>
@@ -281,6 +291,36 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
                                 </div>
                                 <CardTitle className="text-lg mt-3 text-emerald-900">Laporan Pendapatan</CardTitle>
                                 <CardDescription className="text-emerald-700">Analisis tren pendapatan bulanan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/admin/reports/customers">
+                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-sky-50 to-sky-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-sky-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <Users className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-sky-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-sky-900">Laporan Customer</CardTitle>
+                                <CardDescription className="text-sky-700">Analisis pelanggan & kendaraan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/admin/reports/services">
+                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-amber-50 to-amber-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-amber-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <Wrench className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-amber-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-amber-900">Laporan Servis</CardTitle>
+                                <CardDescription className="text-amber-700">Riwayat servis & item populer</CardDescription>
                             </CardHeader>
                         </Card>
                     </Link>

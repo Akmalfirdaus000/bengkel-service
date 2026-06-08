@@ -55,7 +55,12 @@ interface InvoicesReportProps {
     bookings: {
         data: Invoice[];
         links: any[];
-        meta: Pagination;
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from?: number;
+        to?: number;
     };
     summary: {
         total_invoices: number;
@@ -373,10 +378,10 @@ export default function OwnerInvoicesReport({ bookings, summary, filters }: Invo
                         </div>
 
                         {/* Pagination */}
-                        {bookings.meta.last_page > 1 && (
+                        {bookings.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
-                                    Menampilkan {bookings.meta.from} - {bookings.meta.to} dari {bookings.meta.total} data
+                                    Menampilkan {bookings.from} - {bookings.to} dari {bookings.total} data
                                 </div>
                                 <div className="flex gap-2">
                                     {bookings.links.map((link, idx) => (

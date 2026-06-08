@@ -15,6 +15,8 @@ interface VehiclesIndexProps {
             brand: string;
             model: string;
             plate_number: string;
+            engine_number?: string;
+            frame_number?: string;
             year?: string;
             color?: string;
             is_active: boolean;

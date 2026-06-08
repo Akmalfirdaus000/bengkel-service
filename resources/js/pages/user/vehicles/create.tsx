@@ -19,6 +19,8 @@ export default function CreateVehicle() {
         brand: '',
         model: '',
         plate_number: '',
+        engine_number: '',
+        frame_number: '',
         year: '',
         color: '',
         notes: '',
@@ -126,6 +128,34 @@ export default function CreateVehicle() {
                                     />
                                     {errors.plate_number && (
                                         <p className="text-sm text-red-600">{errors.plate_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="engine_number" className="text-slate-700">No. Seri Mesin</Label>
+                                    <Input
+                                        id="engine_number"
+                                        className="border-slate-200"
+                                        value={data.engine_number}
+                                        onChange={(e) => setData('engine_number', e.target.value)}
+                                        placeholder="Contoh: M123456789"
+                                    />
+                                    {errors.engine_number && (
+                                        <p className="text-sm text-red-600">{errors.engine_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="frame_number" className="text-slate-700">No. Seri Rangka</Label>
+                                    <Input
+                                        id="frame_number"
+                                        className="border-slate-200"
+                                        value={data.frame_number}
+                                        onChange={(e) => setData('frame_number', e.target.value)}
+                                        placeholder="Contoh: MH123456789012345"
+                                    />
+                                    {errors.frame_number && (
+                                        <p className="text-sm text-red-600">{errors.frame_number}</p>
                                     )}
                                 </div>
 

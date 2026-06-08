@@ -152,7 +152,7 @@ class ReportController extends Controller
             $displayDateTo = now()->format('Y-m-d');
         }
 
-        $pdf = Pdf::loadView('pdf.report', [
+        $html = view('pdf.report', [
             'bookings_by_status' => $bookingsByStatus,
             'top_vehicles' => $topVehicles,
             'revenue_summary' => $revenueSummary,
@@ -160,13 +160,13 @@ class ReportController extends Controller
             'transactions' => $transactions,
             'date_from' => $displayDateFrom,
             'date_to' => $displayDateTo,
-        ])->setOptions(['defaultFont' => 'Helvetica']);
+        ])->render();
 
-        return response()->streamDownload(function() use ($pdf) {
-            echo $pdf->output();
-        }, 'Laporan-Bisnis-' . $dateFrom . '-ke-' . $dateTo . '.pdf', [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="Laporan-Bisnis-' . $dateFrom . '-ke-' . $dateTo . '.pdf"'
+        return response()->streamDownload(function() use ($html) {
+            echo $html;
+        }, 'Laporan-Bisnis-' . $dateFrom . '-ke-' . $dateTo . '.html', [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="Laporan-Bisnis-' . $dateFrom . '-ke-' . $dateTo . '.html"'
         ]);
     }
 
@@ -287,18 +287,18 @@ class ReportController extends Controller
             'total_unpaid' => $bookings->where('payment_status', 'unpaid')->sum('final_amount'),
         ];
 
-        $pdf = Pdf::loadView('pdf.transaction-report', [
+        $html = view('pdf.transaction-report', [
             'bookings' => $bookings,
             'summary' => $summary,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
-        ])->setOptions(['defaultFont' => 'Helvetica']);
+        ])->render();
 
-        return response()->streamDownload(function() use ($pdf) {
-            echo $pdf->output();
-        }, 'Laporan-Transaksi-' . $dateFrom . '-ke-' . $dateTo . '.pdf', [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="Laporan-Transaksi-' . $dateFrom . '-ke-' . $dateTo . '.pdf"'
+        return response()->streamDownload(function() use ($html) {
+            echo $html;
+        }, 'Laporan-Transaksi-' . $dateFrom . '-ke-' . $dateTo . '.html', [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="Laporan-Transaksi-' . $dateFrom . '-ke-' . $dateTo . '.html"'
         ]);
     }
 
@@ -406,18 +406,185 @@ class ReportController extends Controller
             }),
         ];
 
-        $pdf = Pdf::loadView('pdf.invoice-payment-report', [
+        $html = view('pdf.invoice-payment-report', [
             'bookings' => $bookings,
             'summary' => $summary,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
-        ])->setOptions(['defaultFont' => 'Helvetica']);
+        ])->render();
 
-        return response()->streamDownload(function() use ($pdf) {
-            echo $pdf->output();
-        }, 'Laporan-Invoice-Pembayaran-' . $dateFrom . '-ke-' . $dateTo . '.pdf', [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="Laporan-Invoice-Pembayaran-' . $dateFrom . '-ke-' . $dateTo . '.pdf"'
+        return response()->streamDownload(function() use ($html) {
+            echo $html;
+        }, 'Laporan-Invoice-Pembayaran-' . $dateFrom . '-ke-' . $dateTo . '.html', [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="Laporan-Invoice-Pembayaran-' . $dateFrom . '-ke-' . $dateTo . '.html"'
+        ]);
+    }
+
+    /**
+     * Display customer and vehicle report.
+     */
+    public function customers(Request $request)
+    {
+        $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
+
+        // Get customers with their vehicles and booking stats
+        $customers = User::where('role', 'user')
+            ->with('vehicles')
+            ->withCount(['bookings as total_bookings' => function ($query) use ($dateFrom, $dateTo) {
+                $query->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            }])
+            ->withSum(['bookings as total_spent' => function ($query) use ($dateFrom, $dateTo) {
+                $query->where('status', 'completed')
+                    ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            }], 'final_amount')
+            ->orderByDesc('total_spent')
+            ->paginate(50);
+
+        $summary = [
+            'total_customers' => User::where('role', 'user')->count(),
+            'active_period' => $customers->filter(function($c) { return $c->total_bookings > 0; })->count(),
+            'total_vehicles' => \App\Models\Vehicle::count(),
+        ];
+
+        return Inertia::render('owner/reports/customers', [
+            'customers' => $customers,
+            'summary' => $summary,
+            'filters' => [
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+            ],
+        ]);
+    }
+
+    /**
+     * Export customer report as PDF.
+     */
+    public function exportCustomers(Request $request)
+    {
+        $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
+
+        $customers = User::where('role', 'user')
+            ->with('vehicles')
+            ->withCount(['bookings as total_bookings' => function ($query) use ($dateFrom, $dateTo) {
+                $query->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            }])
+            ->withSum(['bookings as total_spent' => function ($query) use ($dateFrom, $dateTo) {
+                $query->where('status', 'completed')
+                    ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            }], 'final_amount')
+            ->orderByDesc('total_spent')
+            ->get();
+
+        $summary = [
+            'total_customers' => User::where('role', 'user')->count(),
+            'active_period' => $customers->where('total_bookings', '>', 0)->count(),
+            'total_vehicles' => \App\Models\Vehicle::count(),
+        ];
+
+        $html = view('pdf.customer-report', [
+            'customers' => $customers,
+            'summary' => $summary,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ])->render();
+
+        return response()->streamDownload(function() use ($html) {
+            echo $html;
+        }, 'Laporan-Customer-' . $dateFrom . '-ke-' . $dateTo . '.html', [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="Laporan-Customer-' . $dateFrom . '-ke-' . $dateTo . '.html"'
+        ]);
+    }
+
+    /**
+     * Display customer service history report.
+     */
+    public function services(Request $request)
+    {
+        $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
+
+        // Get detailed service history
+        $services = Booking::with(['user', 'vehicle', 'mechanics', 'serviceItems'])
+            ->where('status', 'completed')
+            ->whereBetween('booking_date', [$dateFrom, $dateTo])
+            ->orderBy('booking_date', 'desc')
+            ->paginate(50);
+
+        // Top services summary
+        $topServices = DB::table('booking_service_items')
+            ->join('service_items', 'booking_service_items.service_item_id', '=', 'service_items.id')
+            ->join('bookings', 'booking_service_items.booking_id', '=', 'bookings.id')
+            ->where('bookings.status', 'completed')
+            ->whereBetween('bookings.booking_date', [$dateFrom, $dateTo])
+            ->select('service_items.name', DB::raw('SUM(booking_service_items.subtotal) as total_revenue'), DB::raw('COUNT(*) as total_sold'))
+            ->groupBy('service_items.id', 'service_items.name')
+            ->orderByDesc('total_sold')
+            ->limit(10)
+            ->get();
+
+        $summary = [
+            'total_service_transactions' => $services->total(),
+            'total_items_sold' => $topServices->sum('total_sold'),
+        ];
+
+        return Inertia::render('owner/reports/services', [
+            'services' => $services,
+            'topServices' => $topServices,
+            'summary' => $summary,
+            'filters' => [
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+            ],
+        ]);
+    }
+
+    /**
+     * Export customer service history as PDF.
+     */
+    public function exportServices(Request $request)
+    {
+        $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
+
+        $services = Booking::with(['user', 'vehicle', 'mechanics', 'serviceItems.service'])
+            ->where('status', 'completed')
+            ->whereBetween('booking_date', [$dateFrom, $dateTo])
+            ->orderBy('booking_date', 'desc')
+            ->get();
+
+        $topServices = DB::table('booking_service_items')
+            ->join('service_items', 'booking_service_items.service_item_id', '=', 'service_items.id')
+            ->join('bookings', 'booking_service_items.booking_id', '=', 'bookings.id')
+            ->where('bookings.status', 'completed')
+            ->whereBetween('bookings.booking_date', [$dateFrom, $dateTo])
+            ->select('service_items.name', DB::raw('SUM(booking_service_items.subtotal) as total_revenue'), DB::raw('COUNT(*) as total_sold'))
+            ->groupBy('service_items.id', 'service_items.name')
+            ->orderByDesc('total_sold')
+            ->limit(10)
+            ->get();
+
+        $summary = [
+            'total_service_transactions' => $services->count(),
+            'total_items_sold' => $topServices->sum('total_sold'),
+        ];
+
+        $html = view('pdf.service-report', [
+            'services' => $services,
+            'topServices' => $topServices,
+            'summary' => $summary,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ])->render();
+
+        return response()->streamDownload(function() use ($html) {
+            echo $html;
+        }, 'Laporan-Service-Customer-' . $dateFrom . '-ke-' . $dateTo . '.html', [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="Laporan-Service-Customer-' . $dateFrom . '-ke-' . $dateTo . '.html"'
         ]);
     }
 }

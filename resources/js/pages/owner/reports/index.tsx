@@ -11,7 +11,8 @@ import {
     Search,
     BarChart3,
     Download,
-    FileText
+    FileText,
+    Wrench
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -61,10 +62,20 @@ export default function OwnerReports({ overview, topServices, filters, allTimeRe
                         <p className="text-slate-500">Pantau pertumbuhan dan performa finansial bengkel Anda.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <a href="/owner/reports/export-pdf" className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2">
-                            <Download className="h-4 w-4" />
-                            Export PDF
-                        </a>
+                        <div className="flex flex-col gap-2">
+                            <a href="/owner/reports/export-pdf" className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 text-xs">
+                                <Download className="h-4 w-4" />
+                                Export PDF (Pendapatan)
+                            </a>
+                            <a href="/owner/reports/customers/export-pdf" className="bg-sky-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 text-xs">
+                                <Download className="h-4 w-4" />
+                                Export PDF (Customer)
+                            </a>
+                            <a href="/owner/reports/services/export-pdf" className="bg-amber-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 text-xs">
+                                <Download className="h-4 w-4" />
+                                Export PDF (Servis)
+                            </a>
+                        </div>
                         <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
                             <div className="flex flex-col px-3">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">Periode</span>
@@ -144,6 +155,36 @@ export default function OwnerReports({ overview, topServices, filters, allTimeRe
                                 </div>
                                 <CardTitle className="text-lg mt-3 text-emerald-900">Laporan Pendapatan</CardTitle>
                                 <CardDescription className="text-emerald-700">Analisis tren pendapatan bulanan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/owner/reports/customers">
+                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-sky-50 to-sky-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-sky-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <Users className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-sky-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-sky-900">Laporan Customer</CardTitle>
+                                <CardDescription className="text-sky-700">Analisis pelanggan & kendaraan</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+
+                    <Link href="/owner/reports/services">
+                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
+                            <CardHeader className="bg-gradient-to-br from-amber-50 to-amber-100 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="bg-amber-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                        <Wrench className="h-6 w-6" />
+                                    </div>
+                                    <ArrowUpRight className="h-5 w-5 text-amber-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
+                                </div>
+                                <CardTitle className="text-lg mt-3 text-amber-900">Laporan Servis</CardTitle>
+                                <CardDescription className="text-amber-700">Riwayat servis & item populer</CardDescription>
                             </CardHeader>
                         </Card>
                     </Link>

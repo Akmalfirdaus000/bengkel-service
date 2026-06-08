@@ -21,6 +21,8 @@ class Vehicle extends Model
         'brand',
         'model',
         'plate_number',
+        'engine_number',
+        'frame_number',
         'year',
         'color',
         'notes',
