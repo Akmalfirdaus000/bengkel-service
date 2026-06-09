@@ -23,6 +23,7 @@ class Payment extends Model
         'transaction_id',
         'notes',
         'paid_at',
+        'payment_proof',
     ];
 
     /**

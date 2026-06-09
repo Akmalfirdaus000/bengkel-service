@@ -470,9 +470,9 @@ export default function ShowBooking({ booking }: ShowBookingProps) {
                                 <CardTitle className="text-base">Aksi Cepat</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                                <Button variant="outline" className="w-full" size="sm">
+                                {/* <Button variant="outline" className="w-full" size="sm">
                                     Download Invoice
-                                </Button>
+                                </Button> */}
                                 {['pending', 'confirmed'].includes(booking.status) && (
                                     <Button
                                         variant="ghost"

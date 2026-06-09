@@ -182,6 +182,35 @@ class BookingController extends Controller
     }
 
     /**
+     * Validate payment for a booking.
+     */
+    public function validatePayment(Request $request, Booking $booking, \App\Models\Payment $payment)
+    {
+        if ($payment->booking_id !== $booking->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:completed,failed',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $payment->update([
+                'status' => $validated['status'],
+            ]);
+
+            $booking->refreshFinancialSummary();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Status pembayaran berhasil diupdate.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengupdate status pembayaran.');
+        }
+    }
+
+    /**
      * Assign mechanics to the booking.
      */
     public function assignMechanic(Request $request, Booking $booking)

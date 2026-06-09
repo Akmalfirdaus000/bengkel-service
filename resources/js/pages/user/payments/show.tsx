@@ -32,9 +32,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function PaymentShow({ booking }: PaymentShowProps) {
     const { data, setData, post, processing, errors } = useForm({
-        payment_method: 'cash',
+        payment_method: 'transfer',
         amount: booking.final_amount,
-        transaction_id: '',
+        payment_proof: null as File | null,
         notes: '',
     });
 
@@ -133,15 +133,35 @@ export default function PaymentShow({ booking }: PaymentShowProps) {
                                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                                 required
                                             >
-                                                <option value="cash">Tunai</option>
                                                 <option value="transfer">Transfer Bank</option>
-                                                <option value="e-wallet">E-Wallet</option>
-                                                <option value="card">Kartu Kredit/Debit</option>
+                                                <option value="qr">QRIS</option>
                                             </select>
                                             {errors.payment_method && (
                                                 <p className="text-sm text-destructive">{errors.payment_method}</p>
                                             )}
                                         </div>
+
+                                        {data.payment_method === 'transfer' && (
+                                            <div className="space-y-2 flex flex-col items-center p-4 border rounded-md bg-muted/20 text-center">
+                                                <Label className="mb-2">Silakan transfer ke rekening berikut:</Label>
+                                                <div className="text-sm">
+                                                    <p className="font-semibold text-lg">Bank BCA</p>
+                                                    <p className="text-xl font-mono mt-1 mb-1">1234 5678 9012</p>
+                                                    <p className="text-muted-foreground">a.n. Bengkel Service Gama</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {data.payment_method === 'qr' && (
+                                            <div className="space-y-2 flex flex-col items-center p-4 border rounded-md bg-muted/20">
+                                                <Label className="text-center mb-2">Silakan scan QR Code berikut untuk melakukan pembayaran:</Label>
+                                                <img 
+                                                    src="/qrcode.jpeg" 
+                                                    alt="QR Code Pembayaran" 
+                                                    className="w-48 h-48 object-contain rounded-md border shadow-sm"
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className="space-y-2">
                                             <Label htmlFor="amount">Jumlah *</Label>
@@ -167,15 +187,19 @@ export default function PaymentShow({ booking }: PaymentShowProps) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="transaction_id">ID Transaksi</Label>
+                                            <Label htmlFor="payment_proof">Bukti Pembayaran *</Label>
                                             <Input
-                                                id="transaction_id"
-                                                value={data.transaction_id}
-                                                onChange={(e) => setData('transaction_id', e.target.value)}
-                                                placeholder="Contoh: TRX123456"
+                                                id="payment_proof"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => setData('payment_proof', e.target.files ? e.target.files[0] : null)}
+                                                required
                                             />
-                                            {errors.transaction_id && (
-                                                <p className="text-sm text-destructive">{errors.transaction_id}</p>
+                                            <p className="text-xs text-muted-foreground">Format gambar (JPG, PNG), maksimal 2MB</p>
+                                            {/* @ts-ignore */}
+                                            {errors.payment_proof && (
+                                                /* @ts-ignore */
+                                                <p className="text-sm text-destructive">{errors.payment_proof}</p>
                                             )}
                                         </div>
 

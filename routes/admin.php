@@ -66,6 +66,8 @@ Route::middleware(['auth', 'verified', 'isAdmin'])
             ->name('bookings.invoice');
         Route::put('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])
             ->name('bookings.update-status');
+        Route::put('/bookings/{booking}/payments/{payment}/validate', [AdminBookingController::class, 'validatePayment'])
+            ->name('bookings.payments.validate');
         Route::put('/bookings/{booking}/assign', [AdminBookingController::class, 'assignMechanic'])
             ->name('bookings.assign-mechanic');
         Route::post('/bookings/{booking}/service-items', [AdminBookingController::class, 'storeServiceItem'])

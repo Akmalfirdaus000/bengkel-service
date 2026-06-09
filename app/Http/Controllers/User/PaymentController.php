@@ -50,21 +50,31 @@ class PaymentController extends Controller
         }
 
         $validated = $request->validate([
-            'payment_method' => 'required|in:cash,transfer,e-wallet,card',
+            'payment_method' => 'required|in:transfer,qr',
             'amount' => 'required|numeric|min:0',
-            'transaction_id' => 'nullable|string|max:255',
+            'payment_proof' => 'required|image|max:2048', // 2MB max
             'notes' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
         try {
+            // Handle file upload
+            $paymentProofPath = null;
+            if ($request->hasFile('payment_proof')) {
+                $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
+            }
+
+            // Generate auto transaction ID
+            $transactionId = 'TRX-' . strtoupper(\Illuminate\Support\Str::random(8));
+
             // Create payment record
             Payment::create([
                 'booking_id' => $booking->id,
                 'payment_method' => $validated['payment_method'],
                 'amount' => $validated['amount'],
-                'status' => 'completed',
-                'transaction_id' => $validated['transaction_id'] ?? null,
+                'status' => 'pending', // Pending until verified by admin
+                'transaction_id' => $transactionId,
+                'payment_proof' => $paymentProofPath,
                 'notes' => $validated['notes'] ?? null,
                 'paid_at' => now(),
             ]);

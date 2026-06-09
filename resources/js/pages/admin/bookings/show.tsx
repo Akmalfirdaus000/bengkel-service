@@ -84,6 +84,7 @@ interface ShowBookingProps {
             amount: number;
             status: string;
             paid_at: string;
+            payment_proof: string | null;
         }>;
     };
     availableMechanics: Array<{
@@ -756,16 +757,52 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                         <p className="mb-3 text-sm font-semibold text-slate-900">Riwayat Pembayaran:</p>
                                         <div className="space-y-2">
                                             {booking.payments.map((payment) => (
-                                                <div key={payment.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                                <div key={payment.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-3">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="capitalize text-sm text-slate-700 font-medium">
-                                                            {payment.payment_method === 'cash' && 'Tunai'}
-                                                            {payment.payment_method === 'transfer' && 'Transfer'}
-                                                            {payment.payment_method === 'e-wallet' && 'E-Wallet'}
-                                                            {payment.payment_method === 'card' && 'Kartu'}
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="capitalize text-sm text-slate-700 font-medium">
+                                                                {payment.payment_method === 'cash' && 'Tunai'}
+                                                                {payment.payment_method === 'transfer' && 'Transfer'}
+                                                                {payment.payment_method === 'e-wallet' && 'E-Wallet'}
+                                                                {payment.payment_method === 'card' && 'Kartu'}
+                                                                {payment.payment_method === 'qr' && 'QRIS'}
+                                                            </span>
+                                                            <StatusBadge status={payment.status} />
+                                                        </div>
                                                         <span className="font-bold text-slate-900">{formatCurrency(payment.amount)}</span>
                                                     </div>
+
+                                                    {(payment.payment_proof || payment.status === 'pending') && (
+                                                        <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                                                            {payment.payment_proof ? (
+                                                                <a href={`/storage/${payment.payment_proof}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline">
+                                                                    Lihat Bukti
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-sm text-slate-500">Tanpa bukti</span>
+                                                            )}
+                                                            
+                                                            {payment.status === 'pending' && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button 
+                                                                        size="sm" 
+                                                                        variant="outline" 
+                                                                        className="h-7 px-2 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700" 
+                                                                        onClick={() => router.put(`/admin/bookings/${booking.id}/payments/${payment.id}/validate`, { status: 'failed' })}
+                                                                    >
+                                                                        Tolak
+                                                                    </Button>
+                                                                    <Button 
+                                                                        size="sm" 
+                                                                        className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700" 
+                                                                        onClick={() => router.put(`/admin/bookings/${booking.id}/payments/${payment.id}/validate`, { status: 'completed' })}
+                                                                    >
+                                                                        Terima
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
