@@ -18,7 +18,7 @@ class AdminDashboardController extends Controller
     {
         $activeStatuses = Booking::activeStatuses();
         $waitingStatuses = Booking::waitingStatuses();
-        $servicingStatuses = [Booking::STATUS_IN_PROGRESS, Booking::STATUS_READY_TO_PICKUP];
+        $servicingStatuses = [Booking::STATUS_IN_PROGRESS];
 
         $stats = [
             'total_bookings' => Booking::whereIn('status', $activeStatuses)->count(),

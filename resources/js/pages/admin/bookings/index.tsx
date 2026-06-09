@@ -347,7 +347,7 @@ export default function AdminBookingsIndex({ bookings, filters }: BookingsIndexP
                                                 <div className="flex items-center gap-3 text-xs text-slate-600">
                                                     <span className="flex items-center gap-1">
                                                         <User className="h-3 w-3" />
-                                                        {booking.user?.name}
+                                                        {booking.customer_name || booking.user?.name}
                                                     </span>
                                                     <span className="text-slate-300">•</span>
                                                     <span className="flex items-center gap-1">
@@ -419,7 +419,7 @@ export default function AdminBookingsIndex({ bookings, filters }: BookingsIndexP
                                                 <div className="flex items-center gap-3 text-xs text-slate-600">
                                                     <span className="flex items-center gap-1">
                                                         <User className="h-3 w-3" />
-                                                        {booking.user?.name}
+                                                        {booking.customer_name || booking.user?.name}
                                                     </span>
                                                     <span className="text-slate-300">•</span>
                                                     <span className="flex items-center gap-1">

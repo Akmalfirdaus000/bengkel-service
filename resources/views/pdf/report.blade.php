@@ -273,11 +273,9 @@
                         @endif
                     </td>
                     <td>
-                        @if($booking->user)
-                            <div class="vehicle-name">{{ $booking->user->name }}</div>
-                            @if($booking->user->phone)
-                                <div class="vehicle-plate">{{ $booking->user->phone }}</div>
-                            @endif
+                        <div class="vehicle-name">{{ $booking->customer_name ?? ($booking->user->name ?? '-') }}</div>
+                        @if($booking->customer_phone || optional($booking->user)->phone)
+                            <div class="vehicle-plate">{{ $booking->customer_phone ?? $booking->user->phone }}</div>
                         @endif
                     </td>
                     <td>

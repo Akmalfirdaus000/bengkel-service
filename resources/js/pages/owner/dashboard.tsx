@@ -276,8 +276,8 @@ export default function OwnerDashboard({
                                         <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-900">{booking.user?.name}</span>
-                                                    <span className="text-xs">{booking.user?.email}</span>
+                                                    <span className="font-bold text-slate-900">{booking.customer_name || booking.user?.name}</span>
+                                                    <span className="text-xs">{booking.customer_phone || booking.user?.email}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">

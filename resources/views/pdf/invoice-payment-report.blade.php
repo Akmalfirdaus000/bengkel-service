@@ -350,11 +350,9 @@
                     </td>
                     <td>{{ $booking->booking_date->format('d/m/Y') }}</td>
                     <td>
-                        @if($booking->user)
-                            <div class="customer-name">{{ $booking->user->name }}</div>
-                            @if($booking->user->phone)
-                                <div class="customer-phone">{{ $booking->user->phone }}</div>
-                            @endif
+                        <div class="customer-name">{{ $booking->customer_name ?? ($booking->user->name ?? '-') }}</div>
+                        @if($booking->customer_phone || optional($booking->user)->phone)
+                            <div class="customer-phone">{{ $booking->customer_phone ?? $booking->user->phone }}</div>
                         @endif
                     </td>
                     <td>

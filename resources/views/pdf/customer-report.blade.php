@@ -231,24 +231,13 @@
                 <tr class="{{ $rowClass }}">
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>
-                        <div class="customer-name">{{ $customer->name }}</div>
-                        <div class="customer-phone">Terdaftar: {{ $customer->created_at->format('d/m/Y') }}</div>
+                        <div class="customer-name">{{ $customer->name ?? 'Guest' }}</div>
                     </td>
                     <td>
                         <div>{{ $customer->phone ?? '-' }}</div>
-                        <div class="customer-phone">{{ $customer->email }}</div>
                     </td>
                     <td>
-                        @if($customer->vehicles && $customer->vehicles->count() > 0)
-                            @foreach($customer->vehicles as $vehicle)
-                                <div class="vehicle-item">
-                                    <span class="vehicle-plate">{{ $vehicle->plate_number }}</span>
-                                    <div class="customer-phone">{{ $vehicle->brand }} {{ $vehicle->model }}</div>
-                                </div>
-                            @endforeach
-                        @else
-                            <span style="color: #999; font-style: italic;">Belum ada kendaraan</span>
-                        @endif
+                        <span style="color: #999; font-style: italic;">Informasi kendaraan tamu</span>
                     </td>
                     <td class="text-center">
                         <strong>{{ $customer->total_bookings }}</strong>

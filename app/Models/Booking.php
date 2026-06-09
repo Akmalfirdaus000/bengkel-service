@@ -14,9 +14,7 @@ class Booking extends Model
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_CONFIRMED = 'confirmed';
-    public const STATUS_ASSIGNED = 'assigned';
     public const STATUS_IN_PROGRESS = 'in_progress';
-    public const STATUS_READY_TO_PICKUP = 'ready_to_pickup';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_CANCELLED = 'cancelled';
 
@@ -34,6 +32,8 @@ class Booking extends Model
         'queue_number',
         'queue_order',
         'user_id',
+        'customer_name',
+        'customer_phone',
         'vehicle_id',
         'booking_date',
         'estimated_start_time',
@@ -54,9 +54,7 @@ class Booking extends Model
         return [
             self::STATUS_PENDING,
             self::STATUS_CONFIRMED,
-            self::STATUS_ASSIGNED,
             self::STATUS_IN_PROGRESS,
-            self::STATUS_READY_TO_PICKUP,
         ];
     }
 
@@ -65,7 +63,6 @@ class Booking extends Model
         return [
             self::STATUS_PENDING,
             self::STATUS_CONFIRMED,
-            self::STATUS_ASSIGNED,
         ];
     }
 

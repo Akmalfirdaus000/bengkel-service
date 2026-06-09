@@ -46,7 +46,7 @@
                 <tr>
                     <td><strong>#{{ $booking->queue_number }}</strong></td>
                     <td>{{ $booking->booking_date->format('d/m/Y') }}</td>
-                    <td>{{ $booking->user->name }}</td>
+                    <td>{{ $booking->customer_name ?? ($booking->user->name ?? '-') }}</td>
                     <td>{{ $booking->vehicle->plate_number }} ({{ $booking->vehicle->brand }})</td>
                     <td>
                         <span class="status-badge {{ $booking->status == 'completed' ? 'status-completed' : ($booking->status == 'cancelled' ? 'status-cancelled' : 'status-other') }}">

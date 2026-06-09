@@ -9,13 +9,11 @@ interface StatusTrackerProps {
 const statusFlow = [
     { status: 'pending', label: 'Menunggu' },
     { status: 'confirmed', label: 'Dikonfirmasi' },
-    { status: 'assigned', label: 'Ditugaskan' },
     { status: 'in_progress', label: 'Dalam Proses' },
-    { status: 'ready_to_pickup', label: 'Siap Diambil' },
     { status: 'completed', label: 'Selesai' },
 ];
 
-const statusOrder = ['pending', 'confirmed', 'assigned', 'in_progress', 'ready_to_pickup', 'completed', 'cancelled'];
+const statusOrder = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'];
 
 export function StatusTracker({ currentStatus, className }: StatusTrackerProps) {
     const currentIndex = statusOrder.indexOf(currentStatus);

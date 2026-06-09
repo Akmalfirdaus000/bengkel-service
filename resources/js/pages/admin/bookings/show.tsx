@@ -48,7 +48,9 @@ interface ShowBookingProps {
         total_amount: number;
         discount_amount: number;
         final_amount: number;
-        user: {
+        customer_name: string;
+        customer_phone: string;
+        user?: {
             id: number;
             name: string;
             email: string;
@@ -61,7 +63,7 @@ interface ShowBookingProps {
             year: string | null;
             color: string | null;
         };
-        serviceItems?: Array<{
+        service_items?: Array<{
             id: number;
             quantity: number;
             unit_price: number;
@@ -138,14 +140,12 @@ const statusButtonStyles: Record<string, string> = {
     cancelled: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700',
 };
 
-const flowOrder = ['pending', 'confirmed', 'assigned', 'in_progress', 'ready_to_pickup', 'completed'];
+const flowOrder = ['pending', 'confirmed', 'in_progress', 'completed'];
 
 const nextStatusMap: Record<string, string | null> = {
     pending: 'confirmed',
-    confirmed: 'assigned',
-    assigned: 'in_progress',
-    in_progress: 'ready_to_pickup',
-    ready_to_pickup: 'completed',
+    confirmed: 'in_progress',
+    in_progress: 'completed',
     completed: null,
     cancelled: null,
 };
@@ -155,6 +155,8 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
     const [selectedMechanicIds, setSelectedMechanicIds] = useState<number[]>(booking.mechanics?.map((m) => m.id) ?? []);
     const [confirmNextStep, setConfirmNextStep] = useState(false);
     const [addServiceModalOpen, setAddServiceModalOpen] = useState(false);
+    const [addPaymentModalOpen, setAddPaymentModalOpen] = useState(false);
+    const [timeModalOpen, setTimeModalOpen] = useState(false);
 
     const statusForm = useForm({
         status: booking.status,
@@ -166,6 +168,18 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         service_sub_item_id: '',
         quantity: '1',
     });
+
+    const timeForm = useForm({
+        estimated_start_time: booking.estimated_start_time ? booking.estimated_start_time.substring(11, 16) : '',
+        estimated_end_time: booking.estimated_end_time ? booking.estimated_end_time.substring(11, 16) : '',
+    });
+
+    const submitTime = (e: React.FormEvent) => {
+        e.preventDefault();
+        timeForm.put(`/admin/bookings/${booking.id}/time`, {
+            onSuccess: () => setTimeModalOpen(false)
+        });
+    };
 
     const formatCurrency = (amount: number | string) => {
         const numeric = Number(amount);
@@ -231,11 +245,89 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         statusForm.setData('status', nextStatus);
         router.put(`/admin/bookings/${booking.id}/status`, {
             status: nextStatus,
-            admin_notes: statusForm.data.admin_notes,
+            admin_notes: '',
         }, {
             onSuccess: () => {
                 setCurrentStatus(nextStatus);
                 setConfirmNextStep(false);
+                
+                // Buka WhatsApp otomatis
+                const phone = (booking.customer_phone || booking.user?.phone || '').replace(/^0/, '62').replace(/\D/g, '');
+                let message = '';
+                
+                const formatRupiah = (num: number) => `Rp ${new Intl.NumberFormat('id-ID').format(num)}`;
+                
+                const serviceListBasic = booking.service_items?.map(i => `- ${i.service.name}`).join('\n') || '- Tidak ada layanan khusus';
+                const serviceListWithPrice = booking.service_items?.map(i => `- ${i.service.name} (${formatRupiah(Number(i.subtotal))})`).join('\n') || '- Tidak ada rincian biaya';
+                const timeInfo = booking.estimated_start_time ? `\n- Waktu Mulai: ${formatTime(booking.estimated_start_time)}` : '';
+
+                const commonDetails = `👤 *Detail Pelanggan*
+- Nama: ${booking.customer_name || booking.user?.name}
+- WhatsApp: ${booking.customer_phone || booking.user?.phone}
+
+🚗 *Detail Kendaraan*
+- Kendaraan: ${booking.vehicle.brand} ${booking.vehicle.model}
+- Plat Nomor: ${booking.vehicle.plate_number}
+${booking.notes ? `- Keluhan/Catatan: ${booking.notes}` : ''}
+
+🗓️ *Jadwal Servis*
+- Tanggal: ${formatDate(booking.booking_date)}${timeInfo}`;
+
+                if (nextStatus === 'pending' || nextStatus === 'confirmed') {
+                    message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Berikut adalah konfirmasi booking servis Anda di *Gama 2000 Auto Service*:
+
+${commonDetails}
+
+🛠️ *Layanan yang Dipilih*
+${serviceListBasic}
+
+ℹ️ *Informasi Penting*
+- Mohon datang ke bengkel *1 jam sebelum* jadwal servis di atas.
+- Silakan tunjukkan pesan ini saat kedatangan.
+
+Terima kasih atas kepercayaan Anda! 🙏`;
+                } else if (nextStatus === 'in_progress') {
+                    const mechanicList = booking.mechanics && booking.mechanics.length > 0 
+                        ? booking.mechanics.map(m => `- ${m.name} (${m.phone || '-'})`).join('\n')
+                        : '- Belum ada mekanik yang ditugaskan';
+
+                    message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Menginformasikan bahwa kendaraan Anda saat ini **sedang dalam proses pengerjaan** oleh tim mekanik kami di *Gama 2000 Auto Service*. 🧑‍🔧⚙️
+
+${commonDetails}
+
+👨‍🔧 *Mekanik Bertugas*
+${mechanicList}
+
+🛠️ *Layanan yang Dikerjakan*
+${serviceListBasic}
+
+Kami akan segera mengabari Anda kembali apabila seluruh proses servis telah selesai. Mohon ditunggu ya! 🙏`;
+                } else if (nextStatus === 'completed') {
+                    message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Kabar baik! Kendaraan Anda telah **SELESAI** dikerjakan dan siap untuk diambil di *Gama 2000 Auto Service*. 🎉🚗
+
+${commonDetails}
+
+📋 *Rincian Layanan & Biaya*
+${serviceListWithPrice}
+
+💰 *Total Tagihan: ${formatRupiah(Number(booking.final_amount))}*
+
+ℹ️ *Langkah Selanjutnya*
+- Silakan datang ke bengkel untuk mengambil kendaraan Anda.
+- Lakukan pembayaran di kasir sesuai total tagihan di atas.
+
+Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga perjalanan Anda aman dan nyaman. 🙏`;
+                } else {
+                    message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*, terkait booking servis kendaraan Anda di Gama 2000 Auto Service...`;
+                }
+                
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
             },
         });
     };
@@ -254,7 +346,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         });
     };
 
-    const serviceItemsCount = booking.serviceItems?.length ?? 0;
+    const service_itemsCount = booking.service_items?.length ?? 0;
 
     const masterStats = [
         {
@@ -281,7 +373,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         {
             title: 'Total Biaya',
             value: formatCurrency(booking.final_amount),
-            description: `${serviceItemsCount} layanan`,
+            description: `${service_itemsCount} layanan`,
             icon: DollarSign,
             accent: 'from-violet-500 to-purple-600',
         },
@@ -369,7 +461,12 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-xs text-slate-600">{stat.description}</p>
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-xs text-slate-600">{stat.description}</p>
+                                        {(stat.title === 'Estimasi Mulai' || stat.title === 'Estimasi Selesai') && (
+                                            <button onClick={() => setTimeModalOpen(true)} className="text-xs text-blue-600 hover:underline flex items-center">Atur Waktu</button>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         );
@@ -420,21 +517,30 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                     <div className="space-y-4">
                                         <div className="rounded-xl bg-slate-50 p-4">
                                             <p className="text-xs text-slate-500 mb-1">Nama Lengkap</p>
-                                            <p className="font-bold text-slate-900">{booking.user.name}</p>
+                                            <p className="font-bold text-slate-900">{booking.customer_name || booking.user?.name}</p>
                                         </div>
-                                        <div className="rounded-xl bg-slate-50 p-4">
-                                            <p className="text-xs text-slate-500 mb-1">Email</p>
-                                            <p className="font-medium text-slate-900 text-sm break-all">{booking.user.email}</p>
-                                        </div>
-                                        {booking.user.phone && (
-                                            <div className="rounded-xl bg-slate-50 p-4">
-                                                <p className="text-xs text-slate-500 mb-1">Nomor Telepon</p>
+                                        <div className="rounded-xl bg-slate-50 p-4 flex justify-between items-center">
+                                            <div>
+                                                <p className="text-xs text-slate-500 mb-1">Nomor WhatsApp</p>
                                                 <div className="flex items-center gap-2">
                                                     <Phone className="h-4 w-4 text-slate-400" />
-                                                    <p className="font-bold text-slate-900">{booking.user.phone}</p>
+                                                    <p className="font-bold text-slate-900">{booking.customer_phone || booking.user?.phone}</p>
                                                 </div>
                                             </div>
-                                        )}
+                                            {(booking.customer_phone || booking.user?.phone) && (
+                                                <Button 
+                                                    size="sm" 
+                                                    className="bg-green-600 hover:bg-green-700"
+                                                    onClick={() => {
+                                                        const phone = (booking.customer_phone || booking.user?.phone || '').replace(/^0/, '62').replace(/\D/g, '');
+                                                        const message = encodeURIComponent(`Halo Bapak/Ibu ${booking.customer_name || booking.user?.name}, kami dari Gama 2000 Auto Service. Kami telah menerima pesanan booking servis Anda untuk mobil ${booking.vehicle.brand} ${booking.vehicle.model} (${booking.vehicle.plate_number}) pada tanggal ${new Date(booking.booking_date).toLocaleDateString('id-ID')}.`);
+                                                        window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                                                    }}
+                                                >
+                                                    Hubungi via WA
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -494,7 +600,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                 )}
                             </CardHeader>
                             <CardContent>
-                                {!booking.serviceItems || booking.serviceItems.length === 0 ? (
+                                {!booking.service_items || booking.service_items.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12">
                                         <div className="rounded-full bg-slate-100 p-4">
                                             <Wrench className="h-10 w-10 text-slate-400" />
@@ -504,7 +610,7 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
-                                        {booking.serviceItems.map((item) => (
+                                        {booking.service_items.map((item) => (
                                             <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4 hover:bg-slate-50 transition-colors">
                                                 <div className="flex items-start gap-3 min-w-0 flex-1">
                                                     <div className="rounded-lg bg-violet-100 p-2.5 shrink-0">
@@ -577,22 +683,11 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="admin_notes" className="text-sm font-medium">Catatan Admin</Label>
-                                    <Textarea
-                                        id="admin_notes"
-                                        value={statusForm.data.admin_notes}
-                                        onChange={(e) => statusForm.setData('admin_notes', e.target.value)}
-                                        placeholder="Tambah catatan untuk booking ini..."
-                                        className="min-h-24"
-                                    />
-                                </div>
-
                                 {nextStatus ? (
                                     <div className="space-y-3">
                                         <Button
                                             type="button"
-                                            className={cn('w-full', buttonColorClass, 'shadow-lg')}
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
                                             onClick={() => setConfirmNextStep(true)}
                                             disabled={statusForm.processing}
                                         >
@@ -600,8 +695,8 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                                 <span>Memproses...</span>
                                             ) : (
                                                 <span className="flex items-center gap-2">
-                                                    <ArrowRight className="h-4 w-4" />
-                                                    Lanjutkan: {statusLabels[nextStatus]}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle h-4 w-4 mr-1"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                                                    Update ke {statusLabels[nextStatus]} & Kirim WA
                                                 </span>
                                             )}
                                         </Button>
@@ -635,6 +730,92 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                             <p className="text-sm text-slate-600">
                                                 Status: <span className="font-bold text-slate-900">{statusLabels[currentStatus]}</span>
                                             </p>
+                                        </div>
+                                        <div className="pt-2">
+                                            <Button
+                                                variant="default"
+                                                className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                                                onClick={() => {
+                                                    const phone = (booking.customer_phone || booking.user?.phone || '').replace(/^0/, '62').replace(/\D/g, '');
+                                                    let message = '';
+                                                    const formatRupiah = (num: number) => `Rp ${new Intl.NumberFormat('id-ID').format(num)}`;
+                                                    
+                                                    const serviceListBasic = booking.service_items?.map(i => `- ${i.service.name}`).join('\n') || '- Tidak ada layanan khusus';
+                                                    const serviceListWithPrice = booking.service_items?.map(i => `- ${i.service.name} (${formatRupiah(Number(i.subtotal))})`).join('\n') || '- Tidak ada rincian biaya';
+                                                    const timeInfo = booking.estimated_start_time ? `\n- Waktu Mulai: ${formatTime(booking.estimated_start_time)}` : '';
+
+                                                    const commonDetails = `👤 *Detail Pelanggan*
+- Nama: ${booking.customer_name || booking.user?.name}
+- WhatsApp: ${booking.customer_phone || booking.user?.phone}
+
+🚗 *Detail Kendaraan*
+- Kendaraan: ${booking.vehicle.brand} ${booking.vehicle.model}
+- Plat Nomor: ${booking.vehicle.plate_number}
+${booking.notes ? `- Keluhan/Catatan: ${booking.notes}` : ''}
+
+🗓️ *Jadwal Servis*
+- Tanggal: ${formatDate(booking.booking_date)}${timeInfo}`;
+
+                                                    if (currentStatus === 'pending' || currentStatus === 'confirmed') {
+                                                        message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Berikut adalah konfirmasi booking servis Anda di *Gama 2000 Auto Service*:
+
+${commonDetails}
+
+🛠️ *Layanan yang Dipilih*
+${serviceListBasic}
+
+ℹ️ *Informasi Penting*
+- Mohon datang ke bengkel *1 jam sebelum* jadwal servis di atas.
+- Silakan tunjukkan pesan ini saat kedatangan.
+
+Terima kasih atas kepercayaan Anda! 🙏`;
+                                                    } else if (currentStatus === 'in_progress') {
+                                                        const mechanicList = booking.mechanics && booking.mechanics.length > 0 
+                                                            ? booking.mechanics.map(m => `- ${m.name} (${m.phone || '-'})`).join('\n')
+                                                            : '- Belum ada mekanik yang ditugaskan';
+
+                                                        message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Menginformasikan bahwa kendaraan Anda saat ini **sedang dalam proses pengerjaan** oleh tim mekanik kami di *Gama 2000 Auto Service*. 🧑‍🔧⚙️
+
+${commonDetails}
+
+👨‍🔧 *Mekanik Bertugas*
+${mechanicList}
+
+🛠️ *Layanan yang Dikerjakan*
+${serviceListBasic}
+
+Kami akan segera mengabari Anda kembali apabila seluruh proses servis telah selesai. Mohon ditunggu ya! 🙏`;
+                                                    } else if (currentStatus === 'completed') {
+                                                        message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
+
+Kabar baik! Kendaraan Anda telah **SELESAI** dikerjakan dan siap untuk diambil di *Gama 2000 Auto Service*. 🎉🚗
+
+${commonDetails}
+
+📋 *Rincian Layanan & Biaya*
+${serviceListWithPrice}
+
+💰 *Total Tagihan: ${formatRupiah(Number(booking.final_amount))}*
+
+ℹ️ *Langkah Selanjutnya*
+- Silakan datang ke bengkel untuk mengambil kendaraan Anda.
+- Lakukan pembayaran di kasir sesuai total tagihan di atas.
+
+Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga perjalanan Anda aman dan nyaman. 🙏`;
+                                                    } else {
+                                                        message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*, terkait booking servis kendaraan Anda di Gama 2000 Auto Service...`;
+                                                    }
+                                                    
+                                                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                                                }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle h-4 w-4 mr-2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                                                Kirim Update ke WA Pelanggan
+                                            </Button>
                                         </div>
                                         {currentStatus === 'completed' && (
                                             <div className="flex flex-col gap-2">
@@ -731,6 +912,21 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                                     </div>
                                     Pembayaran
                                 </CardTitle>
+                                {booking.payment_status !== 'paid' && currentStatus === 'completed' && (
+                                    <Button 
+                                        size="sm" 
+                                        onClick={() => {
+                                            router.post(`/admin/bookings/${booking.id}/payments`, {}, {
+                                                preserveScroll: true,
+                                                onSuccess: () => window.location.reload()
+                                            });
+                                        }} 
+                                        className="gap-2 bg-green-600 hover:bg-green-700"
+                                    >
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Konfirmasi Lunas (Sudah Bayar)
+                                    </Button>
+                                )}
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-3">
@@ -886,6 +1082,30 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                             <Button type="submit" disabled={addServiceForm.processing}>
                                 {addServiceForm.processing ? 'Menyimpan...' : 'Tambah'}
                             </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Time Modal */}
+            <Dialog open={timeModalOpen} onOpenChange={setTimeModalOpen}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Atur Estimasi Waktu</DialogTitle>
+                        <DialogDescription>Tentukan jam mulai dan selesai servis.</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={submitTime} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="estimated_start_time">Jam Mulai</Label>
+                            <input type="time" id="estimated_start_time" className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" value={timeForm.data.estimated_start_time} onChange={e => timeForm.setData('estimated_start_time', e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="estimated_end_time">Jam Selesai (Opsional)</Label>
+                            <input type="time" id="estimated_end_time" className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" value={timeForm.data.estimated_end_time} onChange={e => timeForm.setData('estimated_end_time', e.target.value)} />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button type="button" variant="outline" onClick={() => setTimeModalOpen(false)}>Batal</Button>
+                            <Button type="submit" disabled={timeForm.processing} className="bg-blue-600 hover:bg-blue-700 text-white">Simpan</Button>
                         </div>
                     </form>
                 </DialogContent>

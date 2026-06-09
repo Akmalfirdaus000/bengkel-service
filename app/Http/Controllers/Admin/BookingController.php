@@ -45,11 +45,12 @@ class BookingController extends Controller
         // Search by customer name or plate number
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
-                $q->whereHas('user', function ($subQ) use ($request) {
-                    $subQ->where('name', 'like', '%' . $request->search . '%');
-                })->orWhereHas('vehicle', function ($subQ) use ($request) {
-                    $subQ->where('plate_number', 'like', '%' . $request->search . '%');
-                });
+                $q->where('customer_name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('user', function ($subQ) use ($request) {
+                      $subQ->where('name', 'like', '%' . $request->search . '%');
+                  })->orWhereHas('vehicle', function ($subQ) use ($request) {
+                      $subQ->where('plate_number', 'like', '%' . $request->search . '%');
+                  });
             });
         }
 
@@ -78,11 +79,12 @@ class BookingController extends Controller
 
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
-                $q->whereHas('user', function ($subQ) use ($request) {
-                    $subQ->where('name', 'like', '%' . $request->search . '%');
-                })->orWhereHas('vehicle', function ($subQ) use ($request) {
-                    $subQ->where('plate_number', 'like', '%' . $request->search . '%');
-                });
+                $q->where('customer_name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('user', function ($subQ) use ($request) {
+                      $subQ->where('name', 'like', '%' . $request->search . '%');
+                  })->orWhereHas('vehicle', function ($subQ) use ($request) {
+                      $subQ->where('plate_number', 'like', '%' . $request->search . '%');
+                  });
             });
         }
 
@@ -131,14 +133,33 @@ class BookingController extends Controller
     /**
      * Update the booking status.
      */
+    
+    /**
+     * Update booking estimated times.
+     */
+    public function updateTime(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'estimated_start_time' => 'nullable|date_format:H:i',
+            'estimated_end_time' => 'nullable|date_format:H:i|after:estimated_start_time',
+        ]);
+
+        $dateOnly = \Carbon\Carbon::parse($booking->booking_date)->format('Y-m-d');
+        
+        $booking->update([
+            'estimated_start_time' => $validated['estimated_start_time'] ? $dateOnly . ' ' . $validated['estimated_start_time'] . ':00' : null,
+            'estimated_end_time' => $validated['estimated_end_time'] ? $dateOnly . ' ' . $validated['estimated_end_time'] . ':00' : null,
+        ]);
+
+        return redirect()->back()->with('success', 'Estimasi waktu berhasil diperbarui.');
+    }
+
     public function updateStatus(Request $request, Booking $booking)
     {
         $allowedStatuses = [
             Booking::STATUS_PENDING,
             Booking::STATUS_CONFIRMED,
-            Booking::STATUS_ASSIGNED,
             Booking::STATUS_IN_PROGRESS,
-            Booking::STATUS_READY_TO_PICKUP,
             Booking::STATUS_COMPLETED,
             Booking::STATUS_CANCELLED,
         ];
@@ -211,6 +232,31 @@ class BookingController extends Controller
     }
 
     /**
+     * Add manual payment by admin.
+     */
+    public function addPayment(Request $request, Booking $booking)
+    {
+        DB::beginTransaction();
+        try {
+            $booking->payments()->create([
+                'payment_method' => 'cash',
+                'amount' => $booking->final_amount,
+                'status' => 'completed',
+                'paid_at' => now(),
+                'payment_proof' => null,
+            ]);
+
+            $booking->refreshFinancialSummary();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengonfirmasi pembayaran.');
+        }
+    }
+
+    /**
      * Assign mechanics to the booking.
      */
     public function assignMechanic(Request $request, Booking $booking)
@@ -226,11 +272,6 @@ class BookingController extends Controller
         ]);
 
         $booking->mechanics()->sync($validated['mechanic_ids']);
-
-        // Update status to assigned if it was confirmed
-        if ($booking->status === Booking::STATUS_CONFIRMED) {
-            $booking->update(['status' => Booking::STATUS_ASSIGNED]);
-        }
 
         return redirect()->back()
             ->with('success', 'Mekanik berhasil ditugaskan.');

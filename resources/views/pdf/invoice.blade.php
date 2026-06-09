@@ -50,9 +50,9 @@
             <tr>
                 <td>
                     <h3 style="color: #64748b; font-size: 10px; text-transform: uppercase; margin-bottom: 10px;">Ditujukan Kepada:</h3>
-                    <strong>{{ $booking->user->name }}</strong><br>
-                    {{ $booking->user->email }}<br>
-                    {{ $booking->user->phone }}
+                    <strong>{{ $booking->customer_name ?? ($booking->user->name ?? '-') }}</strong><br>
+                    {{ optional($booking->user)->email }}<br>
+                    {{ $booking->customer_phone ?? ($booking->user->phone ?? '') }}
                 </td>
                 <td>
                     <h3 style="color: #64748b; font-size: 10px; text-transform: uppercase; margin-bottom: 10px;">Kendaraan:</h3>

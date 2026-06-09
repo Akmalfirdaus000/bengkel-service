@@ -273,7 +273,7 @@ export default function ServicesReport({ services, topServices, summary, filters
                                                             <div className="text-xs text-slate-500 mt-1">#{booking.queue_number}</div>
                                                         </td>
                                                         <td className="px-4 py-4 text-sm align-top">
-                                                            <div className="font-semibold text-slate-900">{booking.user.name}</div>
+                                                            <div className="font-semibold text-slate-900">{booking.customer_name || booking.user?.name}</div>
                                                             <div className="flex items-center gap-1 mt-1 text-xs text-slate-600">
                                                                 <Car className="h-3 w-3" />
                                                                 <span>{booking.vehicle.plate_number}</span>

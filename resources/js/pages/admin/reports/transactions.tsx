@@ -333,8 +333,8 @@ export default function TransactionsReport({ bookings, summary, filters }: Trans
                                                     {new Date(booking.booking_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
-                                                    <div className="font-semibold text-slate-900">{booking.user.name}</div>
-                                                    <div className="text-xs text-slate-500">{booking.user.phone || '-'}</div>
+                                                    <div className="font-semibold text-slate-900">{booking.customer_name || booking.user?.name}</div>
+                                                    <div className="text-xs text-slate-500">{booking.customer_phone || booking.user?.phone || '-'}</div>
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
                                                     <div className="font-semibold text-slate-900">{booking.vehicle.brand} {booking.vehicle.model}</div>

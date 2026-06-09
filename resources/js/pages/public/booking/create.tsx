@@ -5,24 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Activity, ArrowLeft, Calendar, Plus, X, Wrench, Car, Check, Clock } from 'lucide-react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
+import { Activity, ArrowLeft, Calendar, Plus, X, Wrench, Car, Clock, User, Phone, Tag } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-
-interface Vehicle {
-    id: number;
-    brand: string;
-    model: string;
-    plate_number: string;
-    year?: string;
-}
 
 interface ServiceCategory {
     id: number;
     name: string;
     slug: string;
+    services?: Service[];
 }
 
 interface ServiceSubItem {
@@ -43,8 +34,7 @@ interface Service {
 }
 
 interface CreateBookingProps {
-    vehicles: Vehicle[];
-    services: Service[];
+    serviceCategories: ServiceCategory[];
 }
 
 interface SelectedService {
@@ -53,12 +43,6 @@ interface SelectedService {
     quantity: number;
     subItem?: ServiceSubItem;
 }
-
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/user/dashboard' },
-    { title: 'Booking Saya', href: '/user/bookings' },
-    { title: 'Booking Baru', href: '/user/bookings/create' },
-];
 
 const toMoneyNumber = (value: number | string | null | undefined) => {
     const numeric = Number(value);
@@ -98,7 +82,7 @@ const getEstimatedTime = (queueOrder: number) => {
     };
 };
 
-export default function CreateBooking({ vehicles, services }: CreateBookingProps) {
+export default function PublicCreateBooking({ serviceCategories }: CreateBookingProps) {
     const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
     const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -108,20 +92,31 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
     const lineIdRef = useRef(1);
 
     const { data, setData, processing, errors } = useForm({
-        vehicle_id: '',
+        customer_name: '',
+        customer_phone: '',
+        brand: '',
+        model: '',
+        plate_number: '',
+        engine_number: '',
+        frame_number: '',
+        year: '',
+        color: '',
         booking_date: '',
         notes: '',
     });
 
-    const categories = useMemo(() => {
-        const grouped = new Map<number, ServiceCategory>();
-        services.forEach((service) => {
-            if (!grouped.has(service.category.id)) {
-                grouped.set(service.category.id, service.category);
+    const services = useMemo(() => {
+        let allServices: Service[] = [];
+        serviceCategories.forEach(cat => {
+            if (cat.services) {
+                const catServices = cat.services.map(s => ({ ...s, category: cat }));
+                allServices = [...allServices, ...catServices];
             }
         });
-        return Array.from(grouped.values());
-    }, [services]);
+        return allServices;
+    }, [serviceCategories]);
+
+    const categories = serviceCategories;
 
     const selectedCategory = useMemo(
         () => categories.find((category) => category.id === selectedCategoryId),
@@ -151,12 +146,16 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
         }, 0);
     }, [selectedServices]);
 
-    const selectedVehicleInfo = useMemo(
-        () => vehicles.find((vehicle) => vehicle.id === Number.parseInt(data.vehicle_id, 10)),
-        [vehicles, data.vehicle_id],
+    const isFormValid = Boolean(
+        data.customer_name && 
+        data.customer_phone && 
+        data.brand && 
+        data.model && 
+        data.plate_number && 
+        data.booking_date && 
+        selectedServices.length > 0 && 
+        slotsAvailable > 0
     );
-
-    const isFormValid = Boolean(data.vehicle_id && data.booking_date && selectedServices.length > 0 && slotsAvailable > 0);
 
     const nextLineId = () => {
         const id = lineIdRef.current;
@@ -287,27 +286,29 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
             return;
         }
 
-        const serviceIds = selectedServices.map((selected) => selected.service.id);
-        const quantities = selectedServices.map((selected) => selected.quantity);
-        const subItemIds = selectedServices.map((selected) => selected.subItem?.id ?? null);
+        const formattedServices = selectedServices.map((selected) => ({
+            service_id: selected.service.id,
+            sub_item_id: selected.subItem?.id ?? null,
+            quantity: selected.quantity
+        }));
 
         router.post(
-            '/user/bookings',
+            '/booking',
             {
-                vehicle_id: data.vehicle_id,
+                customer_name: data.customer_name,
+                customer_phone: data.customer_phone,
+                brand: data.brand,
+                model: data.model,
+                plate_number: data.plate_number,
+                engine_number: data.engine_number,
+                frame_number: data.frame_number,
+                year: data.year,
+                color: data.color,
                 booking_date: data.booking_date,
-                service_ids: serviceIds,
-                service_quantities: quantities,
-                sub_item_ids: subItemIds,
+                services: formattedServices,
                 notes: data.notes,
             },
             {
-                onSuccess: () => {
-                    toast.success('Booking berhasil dibuat!', {
-                        description: `Nomor Antrian: ${String(nextQueueNumber).padStart(3, '0')} | Estimasi: ${estimatedTime.start} - ${estimatedTime.end}`,
-                        duration: 6000,
-                    });
-                },
                 onError: (submitErrors) => {
                     toast.error('Gagal membuat booking', {
                         description: Object.values(submitErrors).flat().join(', ') || 'Silakan periksa kembali input Anda',
@@ -319,10 +320,10 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Booking Servis" />
+        <div className="min-h-screen bg-slate-50">
+            <Head title="Booking Servis - Gama 2000 Auto Service" />
 
-            <div className="min-h-screen w-full min-w-0 bg-slate-50">
+            <div className="w-full min-w-0">
                 {/* Header Section */}
                 <section className="min-w-0 overflow-hidden border-b border-slate-200 bg-white shadow-sm">
                     <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800">
@@ -335,7 +336,7 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
 
                         <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
                             <div className="flex flex-wrap items-center gap-4">
-                                <Link href="/user/bookings">
+                                <Link href="/">
                                     <Button variant="ghost" size="icon" className="bg-white/10 text-white hover:bg-white/20 border border-white/20">
                                         <ArrowLeft className="h-5 w-5" />
                                     </Button>
@@ -347,14 +348,14 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                                             Live
                                         </Badge>
                                         <Badge variant="outline" className="border-white/30 text-white/90 text-xs">
-                                            Bengkel Service
+                                            Gama 2000 Auto Service
                                         </Badge>
                                     </div>
                                     <h1 className="text-3xl font-bold text-white">
                                         Booking Servis Kendaraan
                                     </h1>
                                     <p className="text-blue-100 max-w-2xl">
-                                        Jadwalkan servis untuk kendaraan Anda dengan mudah dan cepat
+                                        Jadwalkan servis untuk kendaraan Anda dengan mudah dan cepat tanpa perlu mendaftar.
                                     </p>
                                 </div>
                             </div>
@@ -370,13 +371,14 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                                         <Calendar className="h-5 w-5 text-gray-700" />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="text-sm font-medium text-gray-700 block mb-2">Pilih Tanggal Booking</label>
+                                        <label className="text-sm font-medium text-gray-700 block mb-2">Pilih Tanggal Booking <span className="text-red-500">*</span></label>
                                         <Input
                                             type="date"
                                             value={data.booking_date}
                                             onChange={(e) => handleBookingDateChange(e.target.value)}
                                             min={new Date().toISOString().split('T')[0]}
                                             className="w-full"
+                                            required
                                         />
                                     </div>
 
@@ -418,90 +420,135 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                             </CardContent>
                         </Card>
                     </div>
-
                 </section>
-
 
                 <form onSubmit={handleSubmit} className="max-w-7xl mx-auto px-4 py-6">
                     <div className="grid gap-6 lg:grid-cols-3">
                         <div className="space-y-6 lg:col-span-2">
+                            {/* Customer Data */}
+                            <div>
+                                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <User className="h-5 w-5" />
+                                    Informasi Pelanggan
+                                </h2>
+                                <Card>
+                                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Nama Lengkap <span className="text-red-500">*</span></label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                                <Input 
+                                                    className="pl-9" 
+                                                    placeholder="Contoh: Budi Santoso" 
+                                                    value={data.customer_name} 
+                                                    onChange={e => setData('customer_name', e.target.value)} 
+                                                    required 
+                                                />
+                                            </div>
+                                            {errors.customer_name && <p className="text-sm text-red-600 mt-1">{errors.customer_name}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Nomor WhatsApp <span className="text-red-500">*</span></label>
+                                            <div className="relative">
+                                                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                                <Input 
+                                                    className="pl-9" 
+                                                    placeholder="Contoh: 08123456789" 
+                                                    value={data.customer_phone} 
+                                                    onChange={e => setData('customer_phone', e.target.value)} 
+                                                    required 
+                                                />
+                                            </div>
+                                            {errors.customer_phone && <p className="text-sm text-red-600 mt-1">{errors.customer_phone}</p>}
+                                            <p className="text-xs text-gray-500">Kami akan menghubungi Anda via WhatsApp untuk konfirmasi.</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Vehicle Data */}
                             <div>
                                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                     <Car className="h-5 w-5" />
-                                    Pilih Kendaraan
+                                    Data Kendaraan
                                 </h2>
-                                {vehicles.length === 0 ? (
-                                    <Card>
-                                        <CardContent className="p-8 text-center">
-                                            <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                            <p className="text-gray-600 mb-4">Tidak ada kendaraan. Tambah kendaraan terlebih dahulu.</p>
-                                            <Link href="/user/vehicles/create">
-                                                <Button>
-                                                    <Plus className="mr-2 h-4 w-4" />
-                                                    Tambah Kendaraan
-                                                </Button>
-                                            </Link>
-                                        </CardContent>
-                                    </Card>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {vehicles.map((vehicle) => (
-                                            <Card
-                                                key={vehicle.id}
-                                                className={`cursor-pointer transition-all hover:shadow-md ${
-                                                    data.vehicle_id === String(vehicle.id)
-                                                        ? 'ring-2 ring-gray-900 shadow-md'
-                                                        : 'hover:border-gray-400'
-                                                }`}
-                                                onClick={() => {
-                                                    setData('vehicle_id', String(vehicle.id));
-                                                }}
-                                            >
-                                                <CardContent className="p-4">
-                                                    <div className="flex flex-col items-center text-center">
-                                                        <div
-                                                            className={`p-4 rounded-xl mb-3 ${
-                                                                data.vehicle_id === String(vehicle.id) ? 'bg-gray-900' : 'bg-gray-100'
-                                                            }`}
-                                                        >
-                                                            <Car
-                                                                className={`h-8 w-8 ${
-                                                                    data.vehicle_id === String(vehicle.id)
-                                                                        ? 'text-white'
-                                                                        : 'text-gray-600'
-                                                                }`}
-                                                            />
-                                                        </div>
-                                                        <h3 className="font-semibold text-sm">
-                                                            {vehicle.brand} {vehicle.model}
-                                                        </h3>
-                                                        <p className="text-xs text-gray-600 mt-1 font-mono">{vehicle.plate_number}</p>
-                                                        {vehicle.year && <p className="text-xs text-gray-500 mt-1">{vehicle.year}</p>}
-                                                        {data.vehicle_id === String(vehicle.id) && (
-                                                            <Badge className="mt-2 bg-gray-900">
-                                                                <Check className="h-3 w-3 mr-1" />
-                                                                Dipilih
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                )}
-                                {errors.vehicle_id && <p className="text-sm text-red-600 mt-2">{errors.vehicle_id}</p>}
+                                <Card>
+                                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Merek Mobil <span className="text-red-500">*</span></label>
+                                            <Input 
+                                                placeholder="Contoh: Toyota" 
+                                                value={data.brand} 
+                                                onChange={e => setData('brand', e.target.value)} 
+                                                required 
+                                            />
+                                            {errors.brand && <p className="text-sm text-red-600 mt-1">{errors.brand}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Model Mobil <span className="text-red-500">*</span></label>
+                                            <Input 
+                                                placeholder="Contoh: Avanza" 
+                                                value={data.model} 
+                                                onChange={e => setData('model', e.target.value)} 
+                                                required 
+                                            />
+                                            {errors.model && <p className="text-sm text-red-600 mt-1">{errors.model}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Plat Nomor <span className="text-red-500">*</span></label>
+                                            <div className="relative">
+                                                <Tag className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                                <Input 
+                                                    className="pl-9 uppercase" 
+                                                    placeholder="Contoh: B 1234 CD" 
+                                                    value={data.plate_number} 
+                                                    onChange={e => setData('plate_number', e.target.value.toUpperCase())} 
+                                                    required 
+                                                />
+                                            </div>
+                                            {errors.plate_number && <p className="text-sm text-red-600 mt-1">{errors.plate_number}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Nomor Seri Mesin (Opsional)</label>
+                                            <Input 
+                                                placeholder="Contoh: 1ND-1234567" 
+                                                value={data.engine_number} 
+                                                onChange={e => setData('engine_number', e.target.value.toUpperCase())} 
+                                                className="uppercase"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Nomor Seri Rangka (Opsional)</label>
+                                            <Input 
+                                                placeholder="Contoh: MHX1234567890" 
+                                                value={data.frame_number} 
+                                                onChange={e => setData('frame_number', e.target.value.toUpperCase())} 
+                                                className="uppercase"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Tahun (Opsional)</label>
+                                            <Input 
+                                                placeholder="Contoh: 2018" 
+                                                value={data.year} 
+                                                onChange={e => setData('year', e.target.value)} 
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
 
+                            {/* Services Data */}
                             <div>
                                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                     <Wrench className="h-5 w-5" />
-                                    Layanan
+                                    Layanan yang Diinginkan
                                     <Badge variant="secondary">{selectedServices.length}</Badge>
                                 </h2>
 
                                 <Card className="border-dashed">
                                     <CardContent className="p-4">
-                                        <Button type="button" className="w-full" onClick={() => setServiceDialogOpen(true)}>
+                                        <Button type="button" className="w-full bg-slate-800 text-white hover:bg-slate-700" onClick={() => setServiceDialogOpen(true)}>
                                             <Plus className="mr-2 h-4 w-4" />
                                             Pilih Layanan
                                         </Button>
@@ -585,14 +632,15 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                                 </Card>
                             </div>
 
+                            {/* Additional Notes */}
                             <div>
-                                <h2 className="text-lg font-semibold mb-4">Catatan Tambahan</h2>
+                                <h2 className="text-lg font-semibold mb-4">Catatan Tambahan (Keluhan Utama)</h2>
                                 <Card>
                                     <CardContent className="p-4">
                                         <Textarea
                                             value={data.notes}
                                             onChange={(e) => setData('notes', e.target.value)}
-                                            placeholder="Keluhan atau kebutuhan khusus lainnya... (opsional)"
+                                            placeholder="Tuliskan keluhan utama mobil Anda di sini... (opsional)"
                                             className="min-h-24 resize-none"
                                         />
                                     </CardContent>
@@ -600,6 +648,7 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                             </div>
                         </div>
 
+                        {/* Sidebar */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-4 space-y-4">
                                 <Card>
@@ -609,17 +658,25 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                                             Ringkasan Booking
                                         </h2>
 
-                                        {selectedVehicleInfo && (
-                                            <div className="flex justify-between items-start pb-4 border-b">
-                                                <span className="text-sm text-gray-600">Kendaraan</span>
-                                                <div className="text-right">
-                                                    <p className="font-semibold text-sm">
-                                                        {selectedVehicleInfo.brand} {selectedVehicleInfo.model}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 font-mono">{selectedVehicleInfo.plate_number}</p>
-                                                </div>
+                                        <div className="flex justify-between items-start pb-4 border-b">
+                                            <span className="text-sm text-gray-600">Pemesan</span>
+                                            <div className="text-right">
+                                                <p className="font-semibold text-sm">
+                                                    {data.customer_name || '-'}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{data.customer_phone}</p>
                                             </div>
-                                        )}
+                                        </div>
+
+                                        <div className="flex justify-between items-start pb-4 border-b">
+                                            <span className="text-sm text-gray-600">Kendaraan</span>
+                                            <div className="text-right">
+                                                <p className="font-semibold text-sm">
+                                                    {data.brand && data.model ? `${data.brand} ${data.model}` : '-'}
+                                                </p>
+                                                <p className="text-xs text-gray-500 font-mono uppercase">{data.plate_number}</p>
+                                            </div>
+                                        </div>
 
                                         {data.booking_date && (
                                             <div className="flex justify-between items-start pb-4 border-b">
@@ -643,13 +700,14 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
 
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <div className="flex justify-between items-center">
-                                                <span className="font-semibold">Total Biaya</span>
+                                                <span className="font-semibold">Estimasi Biaya</span>
                                                 <span className="text-xl font-bold">{formatCurrency(totalAmount)}</span>
                                             </div>
+                                            <p className="text-[10px] text-gray-500 mt-2 text-right">*Biaya riil dapat berubah setelah pengecekan mekanik</p>
                                         </div>
 
-                                        <Button type="submit" className="w-full" size="lg" disabled={!isFormValid || processing}>
-                                            {processing ? 'Memproses...' : 'Konfirmasi Booking'}
+                                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="lg" disabled={!isFormValid || processing}>
+                                            {processing ? 'Memproses...' : 'Kirim Booking'}
                                         </Button>
 
                                         {slotsAvailable <= 3 && slotsAvailable > 0 && (
@@ -657,7 +715,7 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                                         )}
 
                                         <p className="text-xs text-center text-gray-500">
-                                            Dengan melakukan booking, Anda menyetujui syarat dan ketentuan kami
+                                            Admin kami akan menghubungi Anda via WhatsApp setelah Anda mengirim form ini.
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -665,16 +723,15 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                         </div>
                     </div>
                 </form>
-
             </div>
 
-
+            {/* Service Selection Dialog */}
             <Dialog open={serviceDialogOpen && !pendingServiceId} onOpenChange={setServiceDialogOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader>
                         <DialogTitle>Pilih Layanan</DialogTitle>
                         <DialogDescription>
-                            Alur: pilih kategori servis, lalu pilih item servis. Jika item punya varian, pilih nama variannya.
+                            Pilih kategori servis, lalu pilih item servis. Jika item punya varian, pilih nama variannya.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -801,56 +858,62 @@ export default function CreateBooking({ vehicles, services }: CreateBookingProps
                         }
                     }}
                 >
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle>Pilih Nama Sub Item</DialogTitle>
-                            <DialogDescription>
-                                Anda memilih {pendingService.name}. Silakan pilih varian/sub item yang diinginkan.
-                            </DialogDescription>
+                            <DialogTitle>Pilih Varian: {pendingService.name}</DialogTitle>
+                            <DialogDescription>Item ini memiliki beberapa sub pilihan. Pilih minimal satu.</DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-2 mt-3">
-                            {pendingService.sub_items.map((subItem) => (
-                                <button
-                                    key={subItem.id}
-                                    type="button"
-                                    onClick={() => {
-                                        setPendingSubItemIds((prev) =>
-                                            prev.includes(subItem.id)
-                                                ? prev.filter((id) => id !== subItem.id)
-                                                : [...prev, subItem.id],
-                                        );
-                                    }}
-                                    className={`w-full text-left p-3 rounded-lg border transition ${
-                                        pendingSubItemIds.includes(subItem.id)
-                                            ? 'border-gray-900 bg-gray-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
+                        <div className="space-y-3 py-4 max-h-60 overflow-y-auto">
+                            {pendingService.sub_items.map((subItem) => {
+                                const isChecked = pendingSubItemIds.includes(subItem.id);
+                                return (
+                                    <label
+                                        key={subItem.id}
+                                        className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all ${
+                                            isChecked ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            className="mt-1"
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setPendingSubItemIds([...pendingSubItemIds, subItem.id]);
+                                                } else {
+                                                    setPendingSubItemIds(pendingSubItemIds.filter((id) => id !== subItem.id));
+                                                }
+                                            }}
+                                        />
+                                        <div className="flex-1">
                                             <p className="font-medium text-sm">{subItem.name}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{subItem.slug}</p>
+                                            {subItem.slug && <p className="text-xs text-gray-500 mt-0.5">{subItem.slug}</p>}
                                         </div>
-                                        <p className="text-sm font-semibold">
-                                            +{formatCurrency(subItem.additional_price)}
-                                        </p>
-                                    </div>
-                                </button>
-                            ))}
+                                        <p className="font-medium text-sm">+{formatCurrency(subItem.additional_price)}</p>
+                                    </label>
+                                );
+                            })}
                         </div>
 
-                        <Button
-                            type="button"
-                            className="w-full mt-4"
-                            onClick={confirmAddServiceWithSubItem}
-                            disabled={pendingSubItemIds.length === 0}
-                        >
-                            Konfirmasi Pilihan
-                        </Button>
+                        <div className="flex justify-end gap-3 border-t pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setPendingServiceId(null);
+                                    setPendingSubItemIds([]);
+                                }}
+                            >
+                                Batal
+                            </Button>
+                            <Button type="button" onClick={confirmAddServiceWithSubItem}>
+                                Konfirmasi & Tambah
+                            </Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             )}
-        </AppLayout>
+        </div>
     );
 }

@@ -83,7 +83,7 @@ export default function WorkshopStatus({ bookings }: WorkshopStatusProps) {
                                             <User className="h-4 w-4" />
                                             <span className="font-medium">Pelanggan</span>
                                         </div>
-                                        <span className="font-bold text-slate-900">{booking.user?.name}</span>
+                                        <span className="font-bold text-slate-900">{booking.customer_name || booking.user?.name}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <div className="flex items-center gap-2 text-slate-500">

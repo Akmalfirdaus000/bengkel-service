@@ -335,7 +335,7 @@ export default function AdminDashboard({
                                                             {booking.vehicle?.brand} {booking.vehicle?.model}
                                                         </p>
                                                         <div className="flex items-center gap-2 text-xs text-slate-600 mt-1">
-                                                            <span>{booking.user?.name}</span>
+                                                            <span>{booking.customer_name || booking.user?.name}</span>
                                                             <span className="text-slate-300">•</span>
                                                             <span>{formatTimeShort(booking.booking_date)}</span>
                                                         </div>
@@ -381,7 +381,7 @@ export default function AdminDashboard({
                                                         {booking.vehicle?.brand} {booking.vehicle?.model}
                                                     </p>
                                                     <p className="truncate text-xs text-slate-600">
-                                                        {booking.user?.name}
+                                                        {booking.customer_name || booking.user?.name}
                                                     </p>
                                                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
                                                         <MapPin className="h-3 w-3" />

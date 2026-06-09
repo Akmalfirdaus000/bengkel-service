@@ -289,7 +289,7 @@ export default function AdminBookingsHistory({ bookings, filters }: BookingsHist
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <FileText className="h-3 w-3 text-slate-400" />
-                                                        <span className="font-medium text-slate-900">{booking.user?.name}</span>
+                                                        <span className="font-medium text-slate-900">{booking.customer_name || booking.user?.name}</span>
                                                     </div>
                                                 </div>
                                             </div>

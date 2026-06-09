@@ -257,9 +257,7 @@
                         <div class="sub-text">#{{ $booking->queue_number }}</div>
                     </td>
                     <td>
-                        @if($booking->user)
-                            <div class="bold-text">{{ $booking->user->name }}</div>
-                        @endif
+                        <div class="bold-text">{{ $booking->customer_name ?? ($booking->user->name ?? '-') }}</div>
                         @if($booking->vehicle)
                             <div class="sub-text" style="margin-top: 4px;">{{ $booking->vehicle->brand }} {{ $booking->vehicle->model }}</div>
                             <div class="bold-text" style="font-size: 10px;">{{ $booking->vehicle->plate_number }}</div>

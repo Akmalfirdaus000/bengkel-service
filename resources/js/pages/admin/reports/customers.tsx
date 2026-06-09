@@ -17,17 +17,10 @@ import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 interface Customer {
-    id: number;
     name: string;
-    email: string;
     phone: string;
     total_bookings: number;
     total_spent: number | null;
-    vehicles: Array<{
-        brand: string;
-        model: string;
-        plate_number: string;
-    }>;
 }
 
 interface Pagination {
@@ -219,8 +212,7 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                 <thead>
                                     <tr className="border-b border-slate-200">
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Pelanggan</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Kontak</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Kendaraan</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">No. WhatsApp</th>
                                         <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-600">Total Servis (Periode)</th>
                                         <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">Total Transaksi</th>
                                     </tr>
@@ -237,29 +229,12 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                         </tr>
                                     ) : (
                                         customers.data.map((customer, idx) => (
-                                            <tr key={customer.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
+                                            <tr key={`${customer.name}-${customer.phone}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
                                                 <td className="px-4 py-4 text-sm">
-                                                    <div className="font-bold text-slate-900">{customer.name}</div>
+                                                    <div className="font-bold text-slate-900">{customer.name || 'Guest'}</div>
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
                                                     <div className="text-slate-900">{customer.phone || '-'}</div>
-                                                    <div className="text-xs text-slate-500">{customer.email}</div>
-                                                </td>
-                                                <td className="px-4 py-4 text-sm">
-                                                    {customer.vehicles && customer.vehicles.length > 0 ? (
-                                                        <div className="space-y-1">
-                                                            {customer.vehicles.map((v, i) => (
-                                                                <div key={i} className="flex items-center gap-2">
-                                                                    <Badge variant="outline" className="text-xs font-medium">
-                                                                        {v.plate_number}
-                                                                    </Badge>
-                                                                    <span className="text-xs text-slate-600">{v.brand} {v.model}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-slate-400 italic text-xs">Belum ada kendaraan</span>
-                                                    )}
                                                 </td>
                                                 <td className="px-4 py-4 text-center text-sm font-semibold text-slate-900">
                                                     {customer.total_bookings}

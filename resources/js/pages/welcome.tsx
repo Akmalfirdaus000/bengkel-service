@@ -31,8 +31,8 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                 </Link>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    <Link href="/login">
-                                        <Button className="rounded-full px-6 shadow-md shadow-primary/10">Masuk</Button>
+                                    <Link href="/booking">
+                                        <Button className="rounded-full px-6 shadow-md shadow-primary/10">Booking Sekarang</Button>
                                     </Link>
                                 </div>
                             )}
@@ -78,28 +78,17 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     Gunakan aplikasi kami untuk menjadwalkan perbaikan dan perawatan mobil Anda. Ikuti panduan mudah dari login hingga proses booking selesai.
                                 </p>
                                 <div className="flex flex-col gap-4 sm:flex-row pt-4">
-                                    {auth.user ? (
-                                        <Link href="/user/bookings/create">
-                                            <Button size="lg" className="h-14 rounded-full px-8 text-base font-bold shadow-xl shadow-primary/20">
-                                                Booking Servis Sekarang
-                                                <ArrowRight className="ml-2 h-5 w-5" />
-                                            </Button>
-                                        </Link>
-                                    ) : (
-                                        <>
-                                            <Link href="/login">
-                                                <Button size="lg" className="h-14 rounded-full px-8 text-base font-bold shadow-xl shadow-primary/20">
-                                                    Masuk ke Akun
-                                                    <ArrowRight className="ml-2 h-5 w-5" />
-                                                </Button>
-                                            </Link>
-                                            <Link href="#tutorial">
-                                                <Button size="lg" variant="outline" className="h-14 rounded-full px-8 text-base font-bold backdrop-blur-sm">
-                                                    Lihat Panduan
-                                                </Button>
-                                            </Link>
-                                        </>
-                                    )}
+                                    <Link href="/booking">
+                                        <Button size="lg" className="h-14 rounded-full px-8 text-base font-bold shadow-xl shadow-primary/20">
+                                            Booking Servis Sekarang
+                                            <ArrowRight className="ml-2 h-5 w-5" />
+                                        </Button>
+                                    </Link>
+                                    <Link href="#tutorial">
+                                        <Button size="lg" variant="outline" className="h-14 rounded-full px-8 text-base font-bold backdrop-blur-sm">
+                                            Lihat Panduan
+                                        </Button>
+                                    </Link>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-8 pt-10">
                                     <div className="flex items-center gap-3">
@@ -144,9 +133,9 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                         <div className="md:grid md:grid-cols-2 items-center md:pb-24 group relative">
                                             {/* Left Side */}
                                             <div className="md:pr-12 mb-8 md:mb-0 text-center md:text-right relative">
-                                                <h4 className="text-2xl font-bold mb-3">Login ke Aplikasi</h4>
+                                                <h4 className="text-2xl font-bold mb-3">Pilih Jadwal Servis</h4>
                                                 <p className="text-muted-foreground leading-relaxed text-lg">
-                                                    Masuk menggunakan akun customer Anda. Jika Anda pelanggan baru dan belum memiliki akun, silakan hubungi admin atau datang langsung ke bengkel.
+                                                    Tentukan tanggal yang sesuai dengan jadwal Anda. Anda dapat melihat sisa slot antrian yang tersedia secara langsung (real-time).
                                                 </p>
                                             </div>
                                             {/* Center Circle */}
@@ -187,9 +176,9 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                             </div>
                                             {/* Right Side */}
                                             <div className="md:pl-12 text-center md:text-left relative z-10">
-                                                <h4 className="text-2xl font-bold mb-3">Daftarkan Kendaraan</h4>
+                                                <h4 className="text-2xl font-bold mb-3">Isi Data Pelanggan</h4>
                                                 <p className="text-muted-foreground leading-relaxed text-lg">
-                                                    Masuk ke menu kendaraan di dashboard dan tambahkan profil mobil Anda. Informasi ini membantu mekanik kami menyiapkan penanganan yang tepat.
+                                                    Lengkapi nama, nomor WhatsApp, serta informasi kendaraan Anda pada formulir pemesanan. Admin kami akan menghubungi Anda untuk konfirmasi.
                                                 </p>
                                             </div>
                                         </div>
