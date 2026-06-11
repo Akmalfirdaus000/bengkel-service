@@ -16,11 +16,19 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
+interface Vehicle {
+    id: number;
+    brand: string;
+    model: string;
+    plate_number: string;
+}
+
 interface Customer {
     name: string;
     phone: string;
     total_bookings: number;
     total_spent: number | null;
+    vehicles?: Vehicle[];
 }
 
 interface Pagination {
@@ -213,6 +221,7 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                     <tr className="border-b border-slate-200">
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Pelanggan</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">No. WhatsApp</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Kendaraan</th>
                                         <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-600">Total Servis (Periode)</th>
                                         <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">Total Transaksi</th>
                                     </tr>
@@ -235,6 +244,20 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
                                                     <div className="text-slate-900">{customer.phone || '-'}</div>
+                                                </td>
+                                                <td className="px-4 py-4 text-sm">
+                                                    {customer.vehicles && customer.vehicles.length > 0 ? (
+                                                        <div className="space-y-2">
+                                                            {customer.vehicles.map(v => (
+                                                                <div key={v.id} className="flex flex-col">
+                                                                    <span className="font-semibold text-slate-800">{v.plate_number}</span>
+                                                                    <span className="text-xs text-slate-500">{v.brand} {v.model}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-slate-400 italic">Tidak ada data</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-4 text-center text-sm font-semibold text-slate-900">
                                                     {customer.total_bookings}

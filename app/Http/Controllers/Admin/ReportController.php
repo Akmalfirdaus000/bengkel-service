@@ -434,6 +434,16 @@ class ReportController extends Controller
             ->orderByDesc('total_spent')
             ->paginate(50);
 
+        // Fetch vehicles for each customer
+        $customers->getCollection()->transform(function ($customer) use ($dateFrom, $dateTo) {
+            $customer->vehicles = \App\Models\Vehicle::whereHas('bookings', function($q) use ($customer, $dateFrom, $dateTo) {
+                $q->where('customer_name', $customer->name)
+                  ->where('customer_phone', $customer->phone)
+                  ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            })->get();
+            return $customer;
+        });
+
         $summary = [
             'total_customers' => Booking::distinct('customer_phone')->count('customer_phone'),
             'active_period' => $customers->total(),
@@ -469,6 +479,15 @@ class ReportController extends Controller
             ->groupBy('customer_name', 'customer_phone')
             ->orderByDesc('total_spent')
             ->get();
+
+        $customers->transform(function ($customer) use ($dateFrom, $dateTo) {
+            $customer->vehicles = \App\Models\Vehicle::whereHas('bookings', function($q) use ($customer, $dateFrom, $dateTo) {
+                $q->where('customer_name', $customer->name)
+                  ->where('customer_phone', $customer->phone)
+                  ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            })->get();
+            return $customer;
+        });
 
         $summary = [
             'total_customers' => Booking::distinct('customer_phone')->count('customer_phone'),

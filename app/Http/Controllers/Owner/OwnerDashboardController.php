@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Mechanic;
 use App\Models\Service;
+use App\Models\ServiceItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -59,12 +60,19 @@ class OwnerDashboardController extends Controller
         $activeStatuses = Booking::activeStatuses();
         
         $bookings = Booking::whereIn('status', $activeStatuses)
-            ->with(['user', 'vehicle', 'mechanics'])
+            ->with(['user', 'vehicle', 'mechanics', 'serviceItems.service', 'payments'])
             ->orderBy('booking_date')
-            ->get();
+            ->paginate(12);
+
+        $activeCount = Booking::whereIn('status', ['confirmed', 'in_progress'])->count();
+        $waitingCount = Booking::where('status', 'pending')->count();
 
         return Inertia::render('owner/workshop-status', [
             'bookings' => $bookings,
+            'summary' => [
+                'activeCount' => $activeCount,
+                'waitingCount' => $waitingCount,
+            ]
         ]);
     }
 
@@ -80,6 +88,28 @@ class OwnerDashboardController extends Controller
 
         return Inertia::render('owner/mechanics/performance', [
             'mechanics' => $mechanics,
+        ]);
+    }
+
+    /**
+     * Display the specified booking detail for owner.
+     */
+    public function showBooking(Booking $booking)
+    {
+        $booking->load(['user', 'vehicle', 'mechanics', 'payments']);
+
+        $serviceItems = ServiceItem::where('booking_id', $booking->id)
+            ->with(['service', 'serviceSubItem'])
+            ->get();
+
+        $serviceItems->each(function ($item) {
+            $item->sub_item_name = $item->serviceSubItem?->name;
+        });
+        
+        $booking->setRelation('serviceItems', $serviceItems);
+
+        return Inertia::render('owner/bookings/show', [
+            'booking' => $booking,
         ]);
     }
 }

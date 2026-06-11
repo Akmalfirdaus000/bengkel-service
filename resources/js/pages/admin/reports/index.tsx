@@ -250,36 +250,7 @@ export default function ReportsIndex({ bookingsByStatus, topVehicles, revenueSum
 
                 {/* Quick Report Access */}
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Link href="/admin/reports/transactions">
-                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
-                            <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="bg-blue-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                        <Activity className="h-6 w-6" />
-                                    </div>
-                                    <ArrowUpRight className="h-5 w-5 text-blue-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
-                                </div>
-                                <CardTitle className="text-lg mt-3 text-blue-900">Laporan Transaksi</CardTitle>
-                                <CardDescription className="text-blue-700">Analisis transaksi service lengkap</CardDescription>
-                            </CardHeader>
-                        </Card>
-                    </Link>
-
-                    <Link href="/admin/reports/invoices">
-                        <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
-                            <CardHeader className="bg-gradient-to-br from-violet-50 to-violet-100 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="bg-violet-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                        <FileText className="h-6 w-6" />
-                                    </div>
-                                    <ArrowUpRight className="h-5 w-5 text-violet-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
-                                </div>
-                                <CardTitle className="text-lg mt-3 text-violet-900">Laporan Invoice</CardTitle>
-                                <CardDescription className="text-violet-700">Ringkasan invoice & pembayaran</CardDescription>
-                            </CardHeader>
-                        </Card>
-                    </Link>
-
+                  
                     <Link href="/admin/reports/revenue">
                         <Card className="border-slate-200 bg-white transition-shadow hover:shadow-lg cursor-pointer group">
                             <CardHeader className="bg-gradient-to-br from-emerald-50 to-emerald-100 pb-4">

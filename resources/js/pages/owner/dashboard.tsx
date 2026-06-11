@@ -108,7 +108,7 @@ export default function OwnerDashboard({
                             Berikut adalah ringkasan performa bisnis bengkel Anda hari ini.
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    {/* <div className="flex items-center gap-3">
                         <Button variant="outline" className="gap-2 rounded-full border-slate-200 bg-white">
                             <Calendar className="h-4 w-4" />
                             Filter Laporan
@@ -117,7 +117,7 @@ export default function OwnerDashboard({
                             <PieChart className="h-4 w-4" />
                             Ekspor Data
                         </Button>
-                    </div>
+                    </div> */}
                 </header>
 
                 {/* Master Stats Grid */}
@@ -196,7 +196,7 @@ export default function OwnerDashboard({
                     </Card>
 
                     {/* Quick Access / Stats */}
-                    <div className="space-y-6">
+                    {/* <div className="space-y-6">
                         <Card className="border-slate-200 bg-white shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function OwnerDashboard({
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Recent High Value Bookings */}

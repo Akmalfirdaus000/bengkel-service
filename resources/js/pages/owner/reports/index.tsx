@@ -114,35 +114,7 @@ export default function OwnerReports({ overview, topServices, filters, allTimeRe
 
                 {/* Quick Report Access */}
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Link href="/owner/reports/transactions">
-                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
-                            <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="bg-blue-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                        <BarChart3 className="h-6 w-6" />
-                                    </div>
-                                    <ArrowUpRight className="h-5 w-5 text-blue-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
-                                </div>
-                                <CardTitle className="text-lg mt-3 text-blue-900">Laporan Transaksi</CardTitle>
-                                <CardDescription className="text-blue-700">Analisis transaksi service lengkap</CardDescription>
-                            </CardHeader>
-                        </Card>
-                    </Link>
-
-                    <Link href="/owner/reports/invoices">
-                        <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
-                            <CardHeader className="bg-gradient-to-br from-violet-50 to-violet-100 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="bg-violet-600 text-white p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                        <FileText className="h-6 w-6" />
-                                    </div>
-                                    <ArrowUpRight className="h-5 w-5 text-violet-600 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-all" />
-                                </div>
-                                <CardTitle className="text-lg mt-3 text-violet-900">Laporan Invoice</CardTitle>
-                                <CardDescription className="text-violet-700">Ringkasan invoice & pembayaran</CardDescription>
-                            </CardHeader>
-                        </Card>
-                    </Link>
+                   
 
                     <Link href="/owner/reports/revenue">
                         <Card className="border-none shadow-sm hover:shadow-lg transition-all cursor-pointer group">
@@ -231,40 +203,7 @@ export default function OwnerReports({ overview, topServices, filters, allTimeRe
                     </Card>
 
                     {/* Marketing / Customer Info */}
-                    <Card className="border-none shadow-sm bg-primary text-primary-foreground relative overflow-hidden h-fit">
-                        <div className="absolute top-0 right-0 p-8 opacity-10">
-                            <ArrowUpRight className="h-24 w-24" />
-                        </div>
-                        <CardHeader>
-                            <CardTitle className="text-xl font-black">Target Bisnis</CardTitle>
-                            <CardDescription className="text-primary-foreground/70">Pencapaian target bulan ini</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs font-bold uppercase">
-                                    <span>Revenue Target</span>
-                                    <span>Rp 150JT / 200JT</span>
-                                </div>
-                                <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                                    <div className="h-full bg-white w-3/4 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all animate-pulse-slow" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs font-bold uppercase">
-                                    <span>Customer Acquisition</span>
-                                    <span>85%</span>
-                                </div>
-                                <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                                    <div className="h-full bg-white w-[85%] shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
-                                </div>
-                            </div>
-                            <div className="pt-4">
-                                <button className="w-full bg-white text-primary font-black py-4 rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-transform">
-                                    BUAT STRATEGI BARU
-                                </button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                   
                 </div>
             </div>
         </AppLayout>

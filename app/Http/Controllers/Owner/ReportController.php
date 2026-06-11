@@ -429,22 +429,32 @@ class ReportController extends Controller
         $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
         $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
 
-        // Get customers with their vehicles and booking stats
-        $customers = User::where('role', 'user')
-            ->with('vehicles')
-            ->withCount(['bookings as total_bookings' => function ($query) use ($dateFrom, $dateTo) {
-                $query->whereBetween('booking_date', [$dateFrom, $dateTo]);
-            }])
-            ->withSum(['bookings as total_spent' => function ($query) use ($dateFrom, $dateTo) {
-                $query->where('status', 'completed')
-                    ->whereBetween('booking_date', [$dateFrom, $dateTo]);
-            }], 'final_amount')
+        // Get customers grouped by phone and name
+        $customers = Booking::whereNotNull('customer_phone')
+            ->whereBetween('booking_date', [$dateFrom, $dateTo])
+            ->selectRaw('
+                customer_name as name, 
+                customer_phone as phone, 
+                COUNT(id) as total_bookings, 
+                SUM(CASE WHEN status = "completed" THEN final_amount ELSE 0 END) as total_spent
+            ')
+            ->groupBy('customer_name', 'customer_phone')
             ->orderByDesc('total_spent')
             ->paginate(50);
 
+        // Fetch vehicles for each customer
+        $customers->getCollection()->transform(function ($customer) use ($dateFrom, $dateTo) {
+            $customer->vehicles = \App\Models\Vehicle::whereHas('bookings', function($q) use ($customer, $dateFrom, $dateTo) {
+                $q->where('customer_name', $customer->name)
+                  ->where('customer_phone', $customer->phone)
+                  ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            })->get();
+            return $customer;
+        });
+
         $summary = [
-            'total_customers' => User::where('role', 'user')->count(),
-            'active_period' => $customers->filter(function($c) { return $c->total_bookings > 0; })->count(),
+            'total_customers' => Booking::distinct('customer_phone')->count('customer_phone'),
+            'active_period' => $customers->total(),
             'total_vehicles' => \App\Models\Vehicle::count(),
         ];
 
@@ -466,21 +476,30 @@ class ReportController extends Controller
         $dateFrom = $request->get('date_from', now()->startOfMonth()->toDateString());
         $dateTo = $request->get('date_to', now()->endOfMonth()->toDateString());
 
-        $customers = User::where('role', 'user')
-            ->with('vehicles')
-            ->withCount(['bookings as total_bookings' => function ($query) use ($dateFrom, $dateTo) {
-                $query->whereBetween('booking_date', [$dateFrom, $dateTo]);
-            }])
-            ->withSum(['bookings as total_spent' => function ($query) use ($dateFrom, $dateTo) {
-                $query->where('status', 'completed')
-                    ->whereBetween('booking_date', [$dateFrom, $dateTo]);
-            }], 'final_amount')
+        $customers = Booking::whereNotNull('customer_phone')
+            ->whereBetween('booking_date', [$dateFrom, $dateTo])
+            ->selectRaw('
+                customer_name as name, 
+                customer_phone as phone, 
+                COUNT(id) as total_bookings, 
+                SUM(CASE WHEN status = "completed" THEN final_amount ELSE 0 END) as total_spent
+            ')
+            ->groupBy('customer_name', 'customer_phone')
             ->orderByDesc('total_spent')
             ->get();
 
+        $customers->transform(function ($customer) use ($dateFrom, $dateTo) {
+            $customer->vehicles = \App\Models\Vehicle::whereHas('bookings', function($q) use ($customer, $dateFrom, $dateTo) {
+                $q->where('customer_name', $customer->name)
+                  ->where('customer_phone', $customer->phone)
+                  ->whereBetween('booking_date', [$dateFrom, $dateTo]);
+            })->get();
+            return $customer;
+        });
+
         $summary = [
-            'total_customers' => User::where('role', 'user')->count(),
-            'active_period' => $customers->where('total_bookings', '>', 0)->count(),
+            'total_customers' => Booking::distinct('customer_phone')->count('customer_phone'),
+            'active_period' => $customers->count(),
             'total_vehicles' => \App\Models\Vehicle::count(),
         ];
 

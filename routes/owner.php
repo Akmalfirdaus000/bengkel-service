@@ -41,4 +41,6 @@ Route::middleware(['auth', 'verified', 'isOwner'])
             ->name('workshop-status');
         Route::get('/mechanics', [OwnerDashboardController::class, 'mechanicPerformance'])
             ->name('mechanics.performance');
+        Route::get('/bookings/{booking}', [OwnerDashboardController::class, 'showBooking'])
+            ->name('bookings.show');
     });

@@ -163,12 +163,7 @@ export default function AdminBookingsIndex({ bookings, filters }: BookingsIndexP
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Link href={`/admin/bookings/export-pdf?status=${filters.status || 'all'}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`}>
-                                        <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Ekspor PDF
-                                        </Button>
-                                    </Link>
+                                    
                                     <Link href="/admin/bookings/history">
                                         <Button className="bg-white text-blue-700 hover:bg-blue-50">
                                             <Clock className="mr-2 h-4 w-4" />

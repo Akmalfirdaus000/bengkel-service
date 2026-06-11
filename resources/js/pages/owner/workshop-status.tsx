@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -16,7 +16,20 @@ import type { BreadcrumbItem } from '@/types';
 import { StatusBadge } from '@/components/booking/status-badge';
 
 interface WorkshopStatusProps {
-    bookings: Array<any>;
+    bookings: {
+        data: Array<any>;
+        links: any[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from?: number;
+        to?: number;
+    };
+    summary: {
+        activeCount: number;
+        waitingCount: number;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,9 +39,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function WorkshopStatus({ bookings }: WorkshopStatusProps) {
-    const activeCount = bookings.filter(b => ['confirmed', 'in_progress'].includes(b.status)).length;
-    const waitingCount = bookings.filter(b => b.status === 'pending').length;
+export default function WorkshopStatus({ bookings, summary }: WorkshopStatusProps) {
+    const { activeCount, waitingCount } = summary;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -60,7 +72,7 @@ export default function WorkshopStatus({ bookings }: WorkshopStatusProps) {
                 </header>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {bookings.length > 0 ? bookings.map((booking) => (
+                    {bookings.data.length > 0 ? bookings.data.map((booking) => (
                         <Card key={booking.id} className="border-none shadow-sm hover:shadow-lg transition-all group overflow-hidden">
                             <CardHeader className="pb-4 relative">
                                 <div className="absolute top-0 right-0 p-4">
@@ -109,21 +121,45 @@ export default function WorkshopStatus({ bookings }: WorkshopStatusProps) {
                                     </div>
                                 </div>
                                 
+                                <div className="border-t border-slate-50 pt-3 mb-2">
+                                    {booking.service_items && booking.service_items.length > 0 ? (
+                                        <div className="space-y-2">
+                                            <div className="text-[10px] uppercase font-black text-slate-500">Layanan / Sparepart</div>
+                                            {booking.service_items.slice(0, 3).map((item: any, idx: number) => (
+                                                <div key={idx} className="flex justify-between items-center text-xs">
+                                                    <span className="text-slate-600 line-clamp-1">{item.service?.name || item.name}</span>
+                                                    <span className="font-bold whitespace-nowrap">x{item.quantity}</span>
+                                                </div>
+                                            ))}
+                                            {booking.service_items.length > 3 && (
+                                                <div className="text-[10px] text-center text-slate-400 italic">
+                                                    + {booking.service_items.length - 3} item lainnya
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">Belum ada rincian layanan</div>
+                                    )}
+                                </div>
+
                                 {booking.status === 'in_progress' ? (
-                                    <div className="pt-2 animate-pulse">
-                                        <div className="flex justify-between text-[10px] uppercase font-black text-primary mb-1">
+                                    <div className="pt-2 border-t border-slate-50">
+                                        <div className="flex justify-between text-[10px] uppercase font-black text-primary mb-1 mt-2 animate-pulse">
                                             <span>Progress Pengerjaan</span>
-                                            <span>Estimasi Selesai: 1 Jam</span>
+                                            <span>Sedang Berjalan</span>
                                         </div>
-                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-primary w-2/3 rounded-full" />
+                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+                                            <div className="h-full bg-primary w-2/3 rounded-full animate-pulse" />
                                         </div>
+                                        <Link href={`/owner/bookings/${booking.id}`} className="w-full block text-center text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors py-2 border-2 border-dashed border-slate-100 rounded-xl hover:border-primary/30">
+                                            Lihat Detail
+                                        </Link>
                                     </div>
                                 ) : (
-                                    <div className="pt-2">
-                                        <button className="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors py-2 border-2 border-dashed border-slate-100 rounded-xl hover:border-primary/30">
-                                            Lihat Detail Booking
-                                        </button>
+                                    <div className="pt-2 border-t border-slate-50 mt-2">
+                                        <Link href={`/owner/bookings/${booking.id}`} className="w-full block text-center text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors py-2 border-2 border-dashed border-slate-100 rounded-xl hover:border-primary/30">
+                                            Lihat Detail
+                                        </Link>
                                     </div>
                                 )}
                             </CardContent>
@@ -141,6 +177,29 @@ export default function WorkshopStatus({ bookings }: WorkshopStatusProps) {
                         </div>
                     )}
                 </div>
+
+                {/* Pagination */}
+                {bookings.last_page > 1 && (
+                    <div className="mt-8 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="text-sm text-slate-600">
+                            Menampilkan {bookings.from} - {bookings.to} dari {bookings.total} data
+                        </div>
+                        <div className="flex gap-2">
+                            {bookings.links.map((link, idx) => (
+                                <Link
+                                    key={idx}
+                                    href={link.url || '#'}
+                                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                                        link.active
+                                            ? 'bg-primary text-white'
+                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

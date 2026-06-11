@@ -16,18 +16,19 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
-interface Customer {
+interface Vehicle {
     id: number;
+    brand: string;
+    model: string;
+    plate_number: string;
+}
+
+interface Customer {
     name: string;
-    email: string;
     phone: string;
     total_bookings: number;
     total_spent: number | null;
-    vehicles: Array<{
-        brand: string;
-        model: string;
-        plate_number: string;
-    }>;
+    vehicles?: Vehicle[];
 }
 
 interface Pagination {
@@ -237,19 +238,18 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                         </tr>
                                     ) : (
                                         customers.data.map((customer, idx) => (
-                                            <tr key={customer.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
+                                            <tr key={`${customer.name}-${customer.phone}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}>
                                                 <td className="px-4 py-4 text-sm">
-                                                    <div className="font-bold text-slate-900">{customer.name}</div>
+                                                    <div className="font-bold text-slate-900">{customer.name || 'Guest'}</div>
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
                                                     <div className="text-slate-900">{customer.phone || '-'}</div>
-                                                    <div className="text-xs text-slate-500">{customer.email}</div>
                                                 </td>
                                                 <td className="px-4 py-4 text-sm">
                                                     {customer.vehicles && customer.vehicles.length > 0 ? (
                                                         <div className="space-y-1">
                                                             {customer.vehicles.map((v, i) => (
-                                                                <div key={i} className="flex items-center gap-2">
+                                                                <div key={v.id || i} className="flex items-center gap-2">
                                                                     <Badge variant="outline" className="text-xs font-medium">
                                                                         {v.plate_number}
                                                                     </Badge>
@@ -258,7 +258,7 @@ export default function CustomersReport({ customers, summary, filters }: Custome
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <span className="text-slate-400 italic text-xs">Belum ada kendaraan</span>
+                                                        <span className="text-slate-400 italic text-xs">Tidak ada data</span>
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-4 text-center text-sm font-semibold text-slate-900">

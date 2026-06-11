@@ -237,7 +237,17 @@
                         <div>{{ $customer->phone ?? '-' }}</div>
                     </td>
                     <td>
-                        <span style="color: #999; font-style: italic;">Informasi kendaraan tamu</span>
+                        @if($customer->vehicles && $customer->vehicles->count() > 0)
+                            @foreach($customer->vehicles as $vehicle)
+                                <div class="vehicle-item">
+                                    <span class="vehicle-plate">{{ $vehicle->plate_number }}</span>
+                                    <br>
+                                    <span style="font-size: 9px; color: #666;">{{ $vehicle->brand }} {{ $vehicle->model }}</span>
+                                </div>
+                            @endforeach
+                        @else
+                            <span style="color: #999; font-style: italic;">Tidak ada data</span>
+                        @endif
                     </td>
                     <td class="text-center">
                         <strong>{{ $customer->total_bookings }}</strong>
