@@ -36,6 +36,7 @@ class Booking extends Model
         'customer_phone',
         'vehicle_id',
         'booking_date',
+        'service_date',
         'estimated_start_time',
         'estimated_end_time',
         'status',
@@ -83,6 +84,7 @@ class Booking extends Model
     {
         return [
             'booking_date' => 'datetime',
+            'service_date' => 'datetime',
             'estimated_start_time' => 'datetime',
             'estimated_end_time' => 'datetime',
             'total_amount' => 'decimal:2',

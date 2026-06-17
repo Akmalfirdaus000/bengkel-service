@@ -102,6 +102,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
         year: '',
         color: '',
         booking_date: '',
+        service_date: '',
         notes: '',
     });
 
@@ -153,6 +154,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
         data.model && 
         data.plate_number && 
         data.booking_date && 
+        data.service_date &&
         selectedServices.length > 0 && 
         slotsAvailable > 0
     );
@@ -305,6 +307,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                 year: data.year,
                 color: data.color,
                 booking_date: data.booking_date,
+                service_date: data.service_date,
                 services: formattedServices,
                 notes: data.notes,
             },
@@ -381,6 +384,17 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                             required
                                         />
                                     </div>
+                                    <div className="flex-1">
+                                        <label className="text-sm font-medium text-gray-700 block mb-2">Pilih Tanggal Servis <span className="text-red-500">*</span></label>
+                                        <Input
+                                            type="date"
+                                            value={data.service_date}
+                                            onChange={(e) => setData('service_date', e.target.value)}
+                                            min={data.booking_date || new Date().toISOString().split('T')[0]}
+                                            className="w-full"
+                                            required
+                                        />
+                                    </div>
 
                                     {data.booking_date && (
                                         <div className="hidden md:flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border">
@@ -417,6 +431,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                 )}
 
                                 {errors.booking_date && <p className="text-sm text-red-600 mt-2 ml-16">{errors.booking_date}</p>}
+                                {errors.service_date && <p className="text-sm text-red-600 mt-2 ml-16">{errors.service_date}</p>}
                             </CardContent>
                         </Card>
                     </div>
@@ -680,7 +695,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
 
                                         {data.booking_date && (
                                             <div className="flex justify-between items-start pb-4 border-b">
-                                                <span className="text-sm text-gray-600">Tanggal & Antrian</span>
+                                                <span className="text-sm text-gray-600">Tanggal Booking & Antrian</span>
                                                 <div className="text-right">
                                                     <p className="font-semibold text-sm">{formatDateIndo(data.booking_date)}</p>
                                                     <p className="text-xs text-gray-500">
@@ -689,6 +704,15 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                                     <p className="text-xs text-gray-500">
                                                         {estimatedTime.start} - {estimatedTime.end}
                                                     </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {data.service_date && (
+                                            <div className="flex justify-between items-start pb-4 border-b">
+                                                <span className="text-sm text-gray-600">Tanggal Servis</span>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-sm">{formatDateIndo(data.service_date)}</p>
                                                 </div>
                                             </div>
                                         )}
