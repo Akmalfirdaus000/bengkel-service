@@ -25,6 +25,8 @@ import {
     AlertCircle,
     Activity,
     RefreshCw,
+    Trash2,
+    Edit2,
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -39,6 +41,7 @@ interface ShowBookingProps {
         queue_number: string | null;
         queue_order: number | null;
         booking_date: string;
+        service_date: string;
         estimated_start_time: string | null;
         estimated_end_time: string | null;
         status: string;
@@ -154,7 +157,10 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
     const [currentStatus, setCurrentStatus] = useState(booking.status);
     const [selectedMechanicIds, setSelectedMechanicIds] = useState<number[]>(booking.mechanics?.map((m) => m.id) ?? []);
     const [confirmNextStep, setConfirmNextStep] = useState(false);
+    const [targetTrackerStatus, setTargetTrackerStatus] = useState<string | null>(null);
     const [addServiceModalOpen, setAddServiceModalOpen] = useState(false);
+    const [editServiceModalOpen, setEditServiceModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<any>(null);
     const [addPaymentModalOpen, setAddPaymentModalOpen] = useState(false);
     const [timeModalOpen, setTimeModalOpen] = useState(false);
 
@@ -163,8 +169,20 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
         admin_notes: booking.admin_notes || '',
     });
 
+    const availableExtraServices = allServices.filter(service => service.category?.name !== 'Paket Servis');
+
+    const defaultItem = {
+        service_item_id: availableExtraServices[0] ? String(availableExtraServices[0].id) : '',
+        service_sub_item_id: '',
+        quantity: '1',
+    };
+
     const addServiceForm = useForm({
-        service_item_id: allServices[0] ? String(allServices[0].id) : '',
+        items: [{ ...defaultItem }],
+    });
+
+    const editServiceForm = useForm({
+        service_item_id: '',
         service_sub_item_id: '',
         quantity: '1',
     });
@@ -193,8 +211,6 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
         });
     };
 
@@ -219,23 +235,32 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
     const canAddService = !['completed', 'cancelled'].includes(currentStatus);
     const queueDisplay = booking.queue_number || `BOOK-${String(booking.id).padStart(4, '0')}`;
 
-    const selectedService = useMemo(() => {
-        const id = Number(addServiceForm.data.service_item_id);
-        if (!Number.isFinite(id) || !id) return null;
-        return allServices.find((service) => service.id === id) || null;
-    }, [addServiceForm.data.service_item_id, allServices]);
-
-    const selectedServiceSubItems = useMemo(() => {
-        if (!selectedService) return [];
-        return selectedService.sub_items || selectedService.subItems || [];
-    }, [selectedService, allServices]);
-
     const assignMechanics = () => {
         if (!canEditMechanics) return;
         router.put(`/admin/bookings/${booking.id}/assign`, {
             mechanic_ids: selectedMechanicIds,
         }, {
             onSuccess: () => window.location.reload(),
+        });
+    };
+
+    const handleStatusTrackerClick = (targetStatus: string) => {
+        if (targetStatus === currentStatus) return;
+        setTargetTrackerStatus(targetStatus);
+    };
+
+    const confirmTrackerStatusUpdate = () => {
+        if (!targetTrackerStatus) return;
+
+        statusForm.setData('status', targetTrackerStatus);
+        router.put(`/admin/bookings/${booking.id}/status`, {
+            status: targetTrackerStatus,
+            admin_notes: '',
+        }, {
+            onSuccess: () => {
+                setCurrentStatus(targetTrackerStatus);
+                setTargetTrackerStatus(null);
+            },
         });
     };
 
@@ -257,8 +282,16 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
                 
                 const formatRupiah = (num: number) => `Rp ${new Intl.NumberFormat('id-ID').format(num)}`;
                 
-                const serviceListBasic = booking.service_items?.map(i => `- ${i.service.name}`).join('\n') || '- Tidak ada layanan khusus';
-                const serviceListWithPrice = booking.service_items?.map(i => `- ${i.service.name} (${formatRupiah(Number(i.subtotal))})`).join('\n') || '- Tidak ada rincian biaya';
+                const serviceListBasic = booking.service_items?.map(i => {
+                    const subItem = i.sub_item_name ? ` (${i.sub_item_name})` : '';
+                    return `- ${i.quantity}x ${i.service.name}${subItem}`;
+                }).join('\n') || '- Tidak ada layanan khusus';
+
+                const serviceListWithPrice = booking.service_items?.map(i => {
+                    const subItem = i.sub_item_name ? ` (${i.sub_item_name})` : '';
+                    return `- ${i.quantity}x ${i.service.name}${subItem} : ${formatRupiah(Number(i.subtotal))}`;
+                }).join('\n') || '- Tidak ada rincian biaya';
+
                 const timeInfo = booking.estimated_start_time ? `\n- Waktu Mulai: ${formatTime(booking.estimated_start_time)}` : '';
 
                 const commonDetails = `👤 *Detail Pelanggan*
@@ -268,10 +301,11 @@ export default function AdminBookingShow({ booking, availableMechanics, allServi
 🚗 *Detail Kendaraan*
 - Kendaraan: ${booking.vehicle.brand} ${booking.vehicle.model}
 - Plat Nomor: ${booking.vehicle.plate_number}
-${booking.notes ? `- Keluhan/Catatan: ${booking.notes}` : ''}
-
-🗓️ *Jadwal Servis*
-- Tanggal: ${formatDate(booking.booking_date)}${timeInfo}`;
+${booking.notes ? `- Keluhan/Catatan: ${booking.notes}\n` : ''}
+🗓️ *Informasi Waktu & Antrian*
+- Tanggal Booking: ${formatDate(booking.booking_date)}
+- Jadwal Servis: ${formatDate(booking.service_date)}${timeInfo}
+- Nomor Antrian: ${booking.queue_number || 'Belum diatur'}`;
 
                 if (nextStatus === 'pending' || nextStatus === 'confirmed') {
                     message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
@@ -339,10 +373,39 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
         addServiceForm.post(`/admin/bookings/${booking.id}/service-items`, {
             preserveScroll: true,
             onSuccess: () => {
-                addServiceForm.setData('service_sub_item_id', '');
-                addServiceForm.setData('quantity', '1');
+                addServiceForm.setData('items', [{ ...defaultItem }]);
                 setAddServiceModalOpen(false);
             },
+        });
+    };
+
+    const openEditModal = (item: any) => {
+        setEditingItem(item);
+        editServiceForm.setData({
+            service_item_id: String(item.service_item_id),
+            service_sub_item_id: item.service_sub_item_id ? String(item.service_sub_item_id) : '',
+            quantity: String(item.quantity),
+        });
+        setEditServiceModalOpen(true);
+    };
+
+    const submitEditService = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingItem) return;
+
+        editServiceForm.put(`/admin/bookings/${booking.id}/service-items/${editingItem.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditServiceModalOpen(false);
+                setEditingItem(null);
+            },
+        });
+    };
+
+    const deleteService = (itemId: number) => {
+        if (!confirm('Yakin ingin menghapus layanan ini?')) return;
+        router.delete(`/admin/bookings/${booking.id}/service-items/${itemId}`, {
+            preserveScroll: true,
         });
     };
 
@@ -415,7 +478,7 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                                             Detail Booking
                                         </h1>
                                         <p className="text-blue-100">
-                                            Booking #{booking.id} • {formatDate(booking.booking_date)}
+                                            Booking #{booking.id} • Dipesan: {formatDate(booking.booking_date)} • Jadwal Servis: {formatDate(booking.service_date)}
                                         </p>
                                     </div>
                                 </div>
@@ -495,9 +558,38 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                                 />
                             </div>
                         </div>
-                        <StatusTracker currentStatus={currentStatus} />
+                        <StatusTracker 
+                            currentStatus={currentStatus} 
+                            onStatusClick={handleStatusTrackerClick}
+                        />
                     </CardContent>
                 </Card>
+
+                <Dialog open={!!targetTrackerStatus} onOpenChange={(open) => !open && setTargetTrackerStatus(null)}>
+                    <DialogContent className="max-w-sm">
+                        <DialogHeader>
+                            <DialogTitle>Konfirmasi Ubah Status</DialogTitle>
+                            <DialogDescription>Apakah Anda yakin ingin melompat ke status ini?</DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p className="text-sm text-slate-600">
+                                Mengubah status ke <span className="font-bold text-slate-900">{targetTrackerStatus ? statusLabels[targetTrackerStatus] : ''}</span>.
+                            </p>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setTargetTrackerStatus(null)}>
+                                Batal
+                            </Button>
+                            <Button 
+                                className="bg-amber-600 hover:bg-amber-700 text-white" 
+                                onClick={confirmTrackerStatusUpdate}
+                                disabled={statusForm.processing}
+                            >
+                                Ya, Ubah Status
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Left Column */}
@@ -595,7 +687,7 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                                 {canAddService && (
                                     <Button size="sm" onClick={() => setAddServiceModalOpen(true)} className="gap-2">
                                         <Plus className="h-4 w-4" />
-                                        Tambah Layanan
+                                        Tambah Komponen
                                     </Button>
                                 )}
                             </CardHeader>
@@ -627,7 +719,29 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                                                         <p className="text-sm text-slate-600 mt-1">{formatCurrency(item.unit_price)} per item</p>
                                                     </div>
                                                 </div>
-                                                <p className="text-xl font-bold text-slate-900 shrink-0 ml-4">{formatCurrency(item.subtotal)}</p>
+                                                <div className="flex items-center gap-4 shrink-0 ml-4">
+                                                    <p className="text-xl font-bold text-slate-900">{formatCurrency(item.subtotal)}</p>
+                                                    {canAddService && (
+                                                        <div className="flex items-center gap-1 border-l pl-4 ml-2">
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => openEditModal(item)}
+                                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                                                title="Edit Layanan"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => deleteService(item.id)}
+                                                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                                                title="Hapus Layanan"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -754,7 +868,7 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
 ${booking.notes ? `- Keluhan/Catatan: ${booking.notes}` : ''}
 
 🗓️ *Jadwal Servis*
-- Tanggal: ${formatDate(booking.booking_date)}${timeInfo}`;
+- Tanggal: ${formatDate(booking.service_date)}${timeInfo}`;
 
                                                     if (currentStatus === 'pending' || currentStatus === 'confirmed') {
                                                         message = `Halo Bapak/Ibu *${booking.customer_name || booking.user?.name}*,
@@ -822,13 +936,13 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                                                 <a href={`/admin/bookings/${booking.id}/invoice`} target="_blank">
                                                     <Button variant="default" className="w-full bg-blue-600 hover:bg-blue-700">
                                                         <Printer className="h-4 w-4 mr-2" />
-                                                        Download Invoice
+                                                        Download Struk
                                                     </Button>
                                                 </a>
-                                                <Button variant="outline" className="w-full" onClick={() => window.print()}>
+                                                {/* <Button variant="outline" className="w-full" onClick={() => window.print()}>
                                                     <Printer className="h-4 w-4 mr-2" />
                                                     Cetak Struk Browser
-                                                </Button>
+                                                </Button> */}
                                             </div>
                                         )}
                                     </div>
@@ -1010,77 +1124,211 @@ Terima kasih telah mempercayakan perawatan kendaraan Anda kepada kami! Semoga pe
                 </div>
             </div>
 
-            {/* Add Service Modal */}
+            {/* Add Komponen Modal */}
             <Dialog open={addServiceModalOpen} onOpenChange={setAddServiceModalOpen}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Tambah Layanan</DialogTitle>
-                        <DialogDescription>Tambahkan layanan tambahan saat proses servis berlangsung.</DialogDescription>
+                        <DialogTitle>Tambah Komponen / Sub Layanan</DialogTitle>
+                        <DialogDescription>Tambahkan komponen atau sparepart tambahan saat proses servis berlangsung.</DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={submitExtraService} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="service_item_id">Layanan</Label>
-                            <select
-                                id="service_item_id"
-                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                value={addServiceForm.data.service_item_id}
-                                onChange={(e) => {
-                                    addServiceForm.setData('service_item_id', e.target.value);
-                                    addServiceForm.setData('service_sub_item_id', '');
-                                }}
-                                required
-                            >
-                                {allServices.map((service) => (
-                                    <option key={service.id} value={String(service.id)}>
-                                        {service.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                            {addServiceForm.data.items.map((item, index) => {
+                                const selectedService = allServices.find(s => String(s.id) === item.service_item_id);
+                                const selectedServiceSubItems = selectedService ? (selectedService.sub_items || selectedService.subItems || []) : [];
+                                
+                                return (
+                                    <div key={index} className="space-y-3 p-4 border rounded-xl bg-slate-50/50 relative">
+                                        {addServiceForm.data.items.length > 1 && (
+                                            <button 
+                                                type="button" 
+                                                className="absolute top-2 right-2 p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                                onClick={() => {
+                                                    const newItems = [...addServiceForm.data.items];
+                                                    newItems.splice(index, 1);
+                                                    addServiceForm.setData('items', newItems);
+                                                }}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`service_item_id_${index}`}>Pilih Layanan</Label>
+                                            <select
+                                                id={`service_item_id_${index}`}
+                                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                                value={item.service_item_id}
+                                                onChange={(e) => {
+                                                    const newItems = [...addServiceForm.data.items];
+                                                    newItems[index].service_item_id = e.target.value;
+                                                    newItems[index].service_sub_item_id = '';
+                                                    addServiceForm.setData('items', newItems);
+                                                }}
+                                                required
+                                            >
+                                                {availableExtraServices.map((service) => (
+                                                    <option key={service.id} value={String(service.id)}>
+                                                        {service.name} ({service.category?.name})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="service_sub_item_id">Sub Item (Opsional)</Label>
-                            <select
-                                id="service_sub_item_id"
-                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                value={addServiceForm.data.service_sub_item_id}
-                                onChange={(e) => addServiceForm.setData('service_sub_item_id', e.target.value)}
-                            >
-                                <option value="">Tanpa Sub Item</option>
-                                {selectedServiceSubItems.map((subItem) => (
-                                    <option key={subItem.id} value={String(subItem.id)}>
-                                        {subItem.name} (+{formatCurrency(subItem.additional_price)})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                        {selectedServiceSubItems.length > 0 && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor={`service_sub_item_id_${index}`}>Pilih Komponen / Merk</Label>
+                                                <select
+                                                    id={`service_sub_item_id_${index}`}
+                                                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                                    value={item.service_sub_item_id}
+                                                    onChange={(e) => {
+                                                        const newItems = [...addServiceForm.data.items];
+                                                        newItems[index].service_sub_item_id = e.target.value;
+                                                        addServiceForm.setData('items', newItems);
+                                                    }}
+                                                    required
+                                                >
+                                                    <option value="" disabled>-- Pilih Komponen --</option>
+                                                    {selectedServiceSubItems.map((subItem) => (
+                                                        <option key={subItem.id} value={String(subItem.id)}>
+                                                            {subItem.name} (+{formatCurrency(subItem.additional_price)})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="quantity">Jumlah</Label>
-                            <input
-                                id="quantity"
-                                type="number"
-                                min={1}
-                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                value={addServiceForm.data.quantity}
-                                onChange={(e) => addServiceForm.setData('quantity', e.target.value)}
-                                required
-                            />
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`quantity_${index}`}>Jumlah</Label>
+                                            <input
+                                                id={`quantity_${index}`}
+                                                type="number"
+                                                min={1}
+                                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                                value={item.quantity}
+                                                onChange={(e) => {
+                                                    const newItems = [...addServiceForm.data.items];
+                                                    newItems[index].quantity = e.target.value;
+                                                    addServiceForm.setData('items', newItems);
+                                                }}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
+                        
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full border-dashed"
+                            onClick={() => {
+                                addServiceForm.setData('items', [...addServiceForm.data.items, { ...defaultItem }]);
+                            }}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Tambah Baris Komponen
+                        </Button>
 
-                        {(addServiceForm.errors.service_item_id || addServiceForm.errors.service_sub_item_id || addServiceForm.errors.quantity) && (
+                        {(addServiceForm.errors.items) && (
                             <p className="text-sm text-red-600">
-                                {addServiceForm.errors.service_item_id || addServiceForm.errors.service_sub_item_id || addServiceForm.errors.quantity}
+                                {addServiceForm.errors.items}
                             </p>
                         )}
 
-                        <div className="flex justify-end gap-2 pt-2">
+                        <div className="flex justify-end gap-2 pt-2 border-t mt-4">
                             <Button type="button" variant="outline" onClick={() => setAddServiceModalOpen(false)}>
                                 Batal
                             </Button>
                             <Button type="submit" disabled={addServiceForm.processing}>
-                                {addServiceForm.processing ? 'Menyimpan...' : 'Tambah'}
+                                {addServiceForm.processing ? 'Menyimpan...' : 'Simpan Semua'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Komponen Modal */}
+            <Dialog open={editServiceModalOpen} onOpenChange={setEditServiceModalOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Edit Komponen / Layanan</DialogTitle>
+                        <DialogDescription>Ubah detail komponen atau kuantitas layanan ini.</DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={submitEditService} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_service_item_id">Pilih Layanan</Label>
+                            <select
+                                id="edit_service_item_id"
+                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                value={editServiceForm.data.service_item_id}
+                                onChange={(e) => {
+                                    editServiceForm.setData('service_item_id', e.target.value);
+                                    editServiceForm.setData('service_sub_item_id', '');
+                                }}
+                                required
+                            >
+                                {availableExtraServices.map((service) => (
+                                    <option key={service.id} value={String(service.id)}>
+                                        {service.name} ({service.category?.name})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {(() => {
+                            const selectedService = allServices.find(s => String(s.id) === editServiceForm.data.service_item_id);
+                            const selectedServiceSubItems = selectedService ? (selectedService.sub_items || selectedService.subItems || []) : [];
+                            return selectedServiceSubItems.length > 0 ? (
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit_service_sub_item_id">Pilih Komponen / Merk</Label>
+                                    <select
+                                        id="edit_service_sub_item_id"
+                                        className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                        value={editServiceForm.data.service_sub_item_id}
+                                        onChange={(e) => editServiceForm.setData('service_sub_item_id', e.target.value)}
+                                        required
+                                    >
+                                        <option value="" disabled>-- Pilih Komponen --</option>
+                                        {selectedServiceSubItems.map((subItem) => (
+                                            <option key={subItem.id} value={String(subItem.id)}>
+                                                {subItem.name} (+{formatCurrency(subItem.additional_price)})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : null;
+                        })()}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_quantity">Jumlah</Label>
+                            <input
+                                id="edit_quantity"
+                                type="number"
+                                min={1}
+                                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                value={editServiceForm.data.quantity}
+                                onChange={(e) => editServiceForm.setData('quantity', e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {(editServiceForm.errors.service_item_id || editServiceForm.errors.service_sub_item_id || editServiceForm.errors.quantity) && (
+                            <p className="text-sm text-red-600">
+                                {editServiceForm.errors.service_item_id || editServiceForm.errors.service_sub_item_id || editServiceForm.errors.quantity}
+                            </p>
+                        )}
+
+                        <div className="flex justify-end gap-2 pt-2 border-t mt-4">
+                            <Button type="button" variant="outline" onClick={() => setEditServiceModalOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button type="submit" disabled={editServiceForm.processing}>
+                                {editServiceForm.processing ? 'Menyimpan...' : 'Simpan Perubahan'}
                             </Button>
                         </div>
                     </form>

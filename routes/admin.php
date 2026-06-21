@@ -76,6 +76,10 @@ Route::middleware(['auth', 'verified', 'isAdmin'])
             ->name('bookings.assign-mechanic');
         Route::post('/bookings/{booking}/service-items', [AdminBookingController::class, 'storeServiceItem'])
             ->name('bookings.service-items.store');
+        Route::put('/bookings/{booking}/service-items/{item}', [AdminBookingController::class, 'updateServiceItem'])
+            ->name('bookings.service-items.update');
+        Route::delete('/bookings/{booking}/service-items/{item}', [AdminBookingController::class, 'destroyServiceItem'])
+            ->name('bookings.service-items.destroy');
         Route::delete('/bookings/{booking}', [AdminBookingController::class, 'destroy'])
             ->name('bookings.destroy');
 

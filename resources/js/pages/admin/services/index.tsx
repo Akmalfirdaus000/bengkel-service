@@ -391,8 +391,7 @@ export default function ServicesIndex({ services, categories, filters }: Service
                                     <thead className="border-b border-slate-200 bg-slate-50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Item Servis</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Kategori</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Harga Dasar</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Harga Jasa</th>
                                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Durasi</th>
                                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Sub Item</th>
                                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Status</th>
@@ -411,9 +410,7 @@ export default function ServicesIndex({ services, categories, filters }: Service
                                                         </p>
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-3 text-sm">
-                                                    <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">{service.category.name}</Badge>
-                                                </td>
+
                                                 <td className="px-4 py-3 text-sm font-bold text-slate-900">
                                                     {formatCurrency(service.price)}
                                                 </td>
@@ -544,7 +541,7 @@ export default function ServicesIndex({ services, categories, filters }: Service
 
                         <div className="grid gap-4 md:grid-cols-3">
                             <div className="space-y-2">
-                                <Label>Harga Dasar</Label>
+                                <Label>Harga Jasa</Label>
                                 <Input type="number" min="0" value={itemForm.data.price} onChange={(e) => itemForm.setData('price', e.target.value)} />
                                 <p className="text-xs text-muted-foreground">Preview: {formatCurrency(itemForm.data.price)}</p>
                             </div>

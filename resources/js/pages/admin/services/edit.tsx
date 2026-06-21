@@ -124,7 +124,7 @@ export default function ServiceEdit({ service, categories }: ServiceEditProps) {
 
                             <div className="grid gap-4 md:grid-cols-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="price">Harga Dasar</Label>
+                                    <Label htmlFor="price">Harga Jasa</Label>
                                     <Input id="price" type="number" min="0" value={data.price} onChange={(e) => setData('price', e.target.value)} />
                                     <p className="text-xs text-muted-foreground">Preview: {formatCurrency(data.price)}</p>
                                     {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}

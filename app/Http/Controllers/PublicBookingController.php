@@ -20,10 +20,17 @@ class PublicBookingController extends Controller
     {
         $categories = ServiceCategory::with(['services' => function ($query) {
             $query->active()
+                ->whereIn('name', ['Service Berkala', 'Service Ringan', 'Service Berat'])
                 ->with(['subItems' => function ($q) {
                     $q->active()->orderBy('sort_order');
                 }]);
-        }])->active()->orderBy('sort_order')->get();
+        }])
+        ->whereHas('services', function($query) {
+            $query->active()->whereIn('name', ['Service Berkala', 'Service Ringan', 'Service Berat']);
+        })
+        ->active()
+        ->orderBy('sort_order')
+        ->get();
 
         return Inertia::render('public/booking/create', [
             'serviceCategories' => $categories,

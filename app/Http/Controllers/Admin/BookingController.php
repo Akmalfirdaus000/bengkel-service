@@ -288,6 +288,84 @@ class BookingController extends Controller
         }
 
         $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.service_item_id' => 'required|exists:service_items,id',
+            'items.*.service_sub_item_id' => 'nullable|exists:service_sub_items,id',
+            'items.*.quantity' => 'required|integer|min:1|max:20',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            foreach ($validated['items'] as $itemData) {
+                $service = Service::query()
+                    ->with(['subItems' => fn ($query) => $query->active()])
+                    ->findOrFail($itemData['service_item_id']);
+
+                $subItem = null;
+                if (!empty($itemData['service_sub_item_id'])) {
+                    $subItem = ServiceSubItem::query()
+                        ->where('id', $itemData['service_sub_item_id'])
+                        ->where('service_item_id', $service->id)
+                        ->first();
+
+                    if (!$subItem) {
+                        throw new \Exception('Sub item tidak valid untuk layanan tersebut.');
+                    }
+                }
+
+                $unitPrice = (float) $service->price + (float) ($subItem?->additional_price ?? 0);
+                $quantity = (int) $itemData['quantity'];
+                $existingLine = ServiceItem::query()
+                    ->where('booking_id', $booking->id)
+                    ->where('service_item_id', $service->id)
+                    ->when($subItem?->id, fn ($query, $id) => $query->where('service_sub_item_id', $id))
+                    ->when(!$subItem?->id, fn ($query) => $query->whereNull('service_sub_item_id'))
+                    ->first();
+
+                if ($existingLine) {
+                    $newQuantity = $existingLine->quantity + $quantity;
+                    $existingLine->update([
+                        'quantity' => $newQuantity,
+                        'unit_price' => $unitPrice,
+                        'subtotal' => $unitPrice * $newQuantity,
+                    ]);
+                } else {
+                    ServiceItem::create([
+                        'booking_id' => $booking->id,
+                        'service_item_id' => $service->id,
+                        'service_sub_item_id' => $subItem?->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'subtotal' => $unitPrice * $quantity,
+                    ]);
+                }
+            }
+
+            $booking->refreshFinancialSummary();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Layanan tambahan berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menambahkan layanan tambahan.');
+        }
+    }
+
+    /**
+     * Update an existing service item in the booking.
+     */
+    public function updateServiceItem(Request $request, Booking $booking, ServiceItem $item)
+    {
+        if (in_array($booking->status, Booking::terminalStatuses(), true)) {
+            return redirect()->back()
+                ->with('error', 'Booking selesai/dibatalkan, layanan tidak bisa diubah.');
+        }
+
+        if ($item->booking_id !== $booking->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
             'service_item_id' => 'required|exists:service_items,id',
             'service_sub_item_id' => 'nullable|exists:service_sub_items,id',
             'quantity' => 'required|integer|min:1|max:20',
@@ -313,38 +391,49 @@ class BookingController extends Controller
         try {
             $unitPrice = (float) $service->price + (float) ($subItem?->additional_price ?? 0);
             $quantity = (int) $validated['quantity'];
-            $existingLine = ServiceItem::query()
-                ->where('booking_id', $booking->id)
-                ->where('service_item_id', $service->id)
-                ->when($subItem?->id, fn ($query, $id) => $query->where('service_sub_item_id', $id))
-                ->when(!$subItem?->id, fn ($query) => $query->whereNull('service_sub_item_id'))
-                ->first();
 
-            if ($existingLine) {
-                $newQuantity = $existingLine->quantity + $quantity;
-                $existingLine->update([
-                    'quantity' => $newQuantity,
-                    'unit_price' => $unitPrice,
-                    'subtotal' => $unitPrice * $newQuantity,
-                ]);
-            } else {
-                ServiceItem::create([
-                    'booking_id' => $booking->id,
-                    'service_item_id' => $service->id,
-                    'service_sub_item_id' => $subItem?->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'subtotal' => $unitPrice * $quantity,
-                ]);
-            }
+            $item->update([
+                'service_item_id' => $service->id,
+                'service_sub_item_id' => $subItem?->id,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'subtotal' => $unitPrice * $quantity,
+            ]);
 
             $booking->refreshFinancialSummary();
 
             DB::commit();
-            return redirect()->back()->with('success', 'Layanan tambahan berhasil ditambahkan.');
+            return redirect()->back()->with('success', 'Layanan berhasil diubah.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal menambahkan layanan tambahan.');
+            return redirect()->back()->with('error', 'Gagal mengubah layanan.');
+        }
+    }
+
+    /**
+     * Delete a service item from the booking.
+     */
+    public function destroyServiceItem(Booking $booking, ServiceItem $item)
+    {
+        if (in_array($booking->status, Booking::terminalStatuses(), true)) {
+            return redirect()->back()
+                ->with('error', 'Booking selesai/dibatalkan, layanan tidak bisa dihapus.');
+        }
+
+        if ($item->booking_id !== $booking->id) {
+            abort(404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $item->delete();
+            $booking->refreshFinancialSummary();
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Layanan berhasil dihapus.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menghapus layanan.');
         }
     }
 

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 interface StatusTrackerProps {
     currentStatus: string;
     className?: string;
+    onStatusClick?: (status: string) => void;
 }
 
 const statusFlow = [
@@ -15,7 +16,7 @@ const statusFlow = [
 
 const statusOrder = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'];
 
-export function StatusTracker({ currentStatus, className }: StatusTrackerProps) {
+export function StatusTracker({ currentStatus, className, onStatusClick }: StatusTrackerProps) {
     const currentIndex = statusOrder.indexOf(currentStatus);
     const isCancelled = currentStatus === 'cancelled';
 
@@ -38,13 +39,22 @@ export function StatusTracker({ currentStatus, className }: StatusTrackerProps) 
 
                 return (
                     <div key={step.status} className="flex items-center">
-                        <div className="flex flex-col items-center">
+                        <button
+                            type="button"
+                            disabled={!onStatusClick}
+                            onClick={() => onStatusClick && onStatusClick(step.status)}
+                            className={cn(
+                                "flex flex-col items-center",
+                                onStatusClick && "cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-slate-400 rounded-lg p-1"
+                            )}
+                        >
                             <span
                                 className={cn(
-                                    'flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium',
+                                    'flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-colors',
                                     isCompleted
-                                        ? 'bg-green-500 text-white'
+                                        ? 'bg-green-500 text-white shadow-sm'
                                         : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800',
+                                    onStatusClick && !isCompleted && 'hover:bg-neutral-200'
                                 )}
                             >
                                 {isCompleted ? (
@@ -55,7 +65,7 @@ export function StatusTracker({ currentStatus, className }: StatusTrackerProps) 
                             </span>
                             <span
                                 className={cn(
-                                    'mt-1 text-xs',
+                                    'mt-1 text-xs transition-colors',
                                     isCurrent
                                         ? 'font-medium text-neutral-900 dark:text-neutral-100'
                                         : 'text-neutral-500 dark:text-neutral-400',
@@ -63,7 +73,7 @@ export function StatusTracker({ currentStatus, className }: StatusTrackerProps) 
                             >
                                 {step.label}
                             </span>
-                        </div>
+                        </button>
                         {index < statusFlow.length - 1 && (
                             <div
                                 className={cn(
