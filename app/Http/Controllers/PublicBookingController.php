@@ -20,14 +20,16 @@ class PublicBookingController extends Controller
     {
         $categories = ServiceCategory::with(['services' => function ($query) {
             $query->active()
-                ->whereIn('name', ['Service Berkala', 'Service Ringan', 'Service Berat'])
                 ->with(['subItems' => function ($q) {
                     $q->active()->orderBy('sort_order');
                 }]);
         }])
         ->whereHas('services', function($query) {
-            $query->active()->whereIn('name', ['Service Berkala', 'Service Ringan', 'Service Berat']);
+            $query->active();
         })
+        ->where('name', 'not like', '%sparepart%')
+        ->where('name', 'not like', '%Sparepart%')
+        ->where('name', 'not like', '%SPAREPART%')
         ->active()
         ->orderBy('sort_order')
         ->get();
