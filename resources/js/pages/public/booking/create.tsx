@@ -177,11 +177,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
             return;
         }
 
-        if (service.sub_items.length > 0) {
-            setPendingServiceId(service.id);
-            setPendingSubItemIds([]);
-            return;
-        }
+        // Sub item selection is hidden from public UI. Add directly.
 
         setSelectedServices([
             ...selectedServices,
@@ -616,9 +612,7 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                                                                 +
                                                                             </Button>
                                                                         </div>
-                                                                        <p className="text-sm font-semibold w-24 text-right">
-                                                                            {formatCurrency(unitPrice * selected.quantity)}
-                                                                        </p>
+
                                                                         <Button
                                                                             type="button"
                                                                             variant="ghost"
@@ -722,12 +716,8 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                             <span className="font-bold">{selectedServices.length}</span>
                                         </div>
 
-                                        <div className="bg-gray-50 rounded-lg p-4">
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-semibold">Estimasi Biaya</span>
-                                                <span className="text-xl font-bold">{formatCurrency(totalAmount)}</span>
-                                            </div>
-                                            <p className="text-[10px] text-gray-500 mt-2 text-right">*Biaya riil dapat berubah setelah pengecekan mekanik</p>
+                                        <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-100">
+                                            <p className="text-sm text-gray-600">Total biaya akan diinformasikan oleh admin/mekanik setelah dilakukan pengecekan di bengkel.</p>
                                         </div>
 
                                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="lg" disabled={!isFormValid || processing}>
@@ -753,117 +743,57 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
             <Dialog open={serviceDialogOpen && !pendingServiceId} onOpenChange={setServiceDialogOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader>
-                        <DialogTitle>Pilih Layanan</DialogTitle>
+                        <DialogTitle>Pilih Kategori Servis</DialogTitle>
                         <DialogDescription>
-                            Pilih kategori servis, lalu pilih item servis. Jika item punya varian, pilih nama variannya.
+                            Pilih kategori servis untuk kendaraan Anda.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-                        {!selectedCategoryId ? (
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-4">Pilih Kategori Servis</h3>
-                                <div className="grid gap-3">
-                                    {categories.map((category) => (
-                                        <button
-                                            key={category.id}
-                                            type="button"
-                                            onClick={() => setSelectedCategoryId(category.id)}
-                                            className="p-5 rounded-lg text-left transition-all border-2 border-gray-200 hover:border-gray-400 hover:bg-gray-50"
+                    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                        <div className="space-y-3">
+                            {services.length === 0 ? (
+                                <p className="text-sm text-gray-500 italic text-center py-4">Tidak ada layanan tersedia</p>
+                            ) : (
+                                services.map((service) => {
+                                    const isSelected = selectedServices.some(
+                                        (selected) => selected.service.id === service.id
+                                    );
+                                    return (
+                                        <div
+                                            key={service.id}
+                                            className={`p-4 rounded-xl border-2 transition-all ${
+                                                isSelected
+                                                    ? 'border-blue-600 bg-blue-50/50'
+                                                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                            }`}
                                         >
                                             <div className="flex items-center justify-between">
-                                                <div>
-                                                    <h4 className="font-bold text-lg">{category.name}</h4>
-                                                    <p className="text-sm text-gray-600 mt-1">{category.slug}</p>
+                                                <div className="flex-1">
+                                                    <h3 className="font-bold text-lg text-gray-900">{service.name}</h3>
+                                                    {service.description && (
+                                                        <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                                                    )}
                                                 </div>
-                                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                                    <Plus className="h-5 w-5 text-gray-600" />
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="flex items-start justify-between gap-4 border-2 rounded-xl p-4">
-                                    <div>
-                                        <h3 className="text-xl font-bold">{selectedCategory?.name}</h3>
-                                        <p className="text-sm text-gray-600 mt-1">Pilih item servis dari kategori ini.</p>
-                                    </div>
-                                    <Button type="button" variant="outline" onClick={() => setSelectedCategoryId(null)}>
-                                        <X className="h-4 w-4 mr-2" />
-                                        Ganti Kategori
-                                    </Button>
-                                </div>
-
-                                <div className="space-y-2 max-h-80 overflow-y-auto">
-                                    {filteredServices.length === 0 ? (
-                                        <p className="text-sm text-gray-500 italic text-center py-4">Tidak ada item servis tersedia</p>
-                                    ) : (
-                                        filteredServices.map((service) => {
-                                            const hasSubItems = service.sub_items.length > 0;
-                                            const isSelectedWithoutVariant = selectedServices.some(
-                                                (selected) => selected.service.id === service.id && !selected.subItem,
-                                            );
-                                            const selectedVariantCount = selectedServices.filter(
-                                                (selected) => selected.service.id === service.id && !!selected.subItem,
-                                            ).length;
-                                            return (
-                                                <div
-                                                    key={service.id}
-                                                    className={`p-3 rounded-lg border transition-all ${
-                                                        isSelectedWithoutVariant
-                                                            ? 'border-gray-900 bg-gray-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
-                                                    }`}
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant={isSelected ? 'secondary' : 'default'}
+                                                    disabled={isSelected}
+                                                    onClick={() => handleAddService(service)}
                                                 >
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex-1">
-                                                            <p className="font-medium text-sm">{service.name}</p>
-                                                            {service.description && (
-                                                                <p className="text-xs text-gray-500 mt-1">{service.description}</p>
-                                                            )}
-                                                            <div className="flex items-center gap-2 mt-2">
-                                                                <p className="text-sm text-gray-600">{formatCurrency(service.price)}</p>
-                                                                {hasSubItems && (
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        {service.sub_items.length} varian
-                                                                    </Badge>
-                                                                )}
-                                                                {selectedVariantCount > 0 && (
-                                                                    <Badge variant="secondary" className="text-xs">
-                                                                        {selectedVariantCount} dipilih
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            variant={isSelectedWithoutVariant ? 'secondary' : 'default'}
-                                                            disabled={isSelectedWithoutVariant}
-                                                            onClick={() => handleAddService(service)}
-                                                        >
-                                                            {isSelectedWithoutVariant
-                                                                ? 'Ditambahkan'
-                                                                : hasSubItems
-                                                                  ? 'Pilih Sub Item'
-                                                                  : 'Tambah'}
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                                                    {isSelected ? 'Terpilih' : 'Pilih'}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
                     </div>
 
-                    <div className="px-6 py-4 border-t">
+                    <div className="px-6 py-4 border-t bg-gray-50">
                         <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">{selectedServices.length} layanan dipilih</span>
+                            <span className="text-sm font-medium text-gray-700">{selectedServices.length} kategori dipilih</span>
                             <Button type="button" onClick={() => setServiceDialogOpen(false)} disabled={selectedServices.length === 0}>
                                 Selesai
                             </Button>
@@ -914,7 +844,6 @@ export default function PublicCreateBooking({ serviceCategories }: CreateBooking
                                             <p className="font-medium text-sm">{subItem.name}</p>
                                             {subItem.slug && <p className="text-xs text-gray-500 mt-0.5">{subItem.slug}</p>}
                                         </div>
-                                        <p className="font-medium text-sm">+{formatCurrency(subItem.additional_price)}</p>
                                     </label>
                                 );
                             })}
